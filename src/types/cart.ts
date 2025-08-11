@@ -4,6 +4,7 @@ export type CartItem = {
   unit: string;
   unitPrice: number;
   totalPrice: number;
+  productName?:any
 };
 
 export type Cart = {

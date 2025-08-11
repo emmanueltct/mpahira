@@ -21,7 +21,8 @@ interface DecodedToken {
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(false);
+  const [now, setNow] = useState<number>();
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [sidebarType, setSidebarType] = useState<"carts" | "wishlist" | "notifications" | null>(null);
 
@@ -41,32 +42,36 @@ const NavBar = () => {
     setSidebarType((prev) => (prev === type ? null : type));
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('tokens');
-    logout?.(); // In case your auth-context provides it
-    router.push('/login');
-  };
+  useEffect(() => {
+  setNow(Date.now());
+}, []);
+
+  // const handleLogout = () => {
+  //   localStorage.removeItem('tokens');
+  //   logout?.(); // In case your auth-context provides it
+  //   router.push('/login');
+  // };
 
   // ✅ Auto-logout if token is missing or expired
-  useEffect(() => {
-    const tokenStr = localStorage.getItem('tokens');
-    if (!tokenStr) {
-      handleLogout();
-      return;
-    }
+  // useEffect(() => {
+  //   const tokenStr = localStorage.getItem('tokens');
+  //   if (!tokenStr) {
+  //     handleLogout();
+  //     return;
+  //   }
 
-    try {
-      const { accessToken } = JSON.parse(tokenStr);
-      const decoded: DecodedToken = jwtDecode(accessToken);
-      const now = Date.now() / 1000;
+  //   try {
+  //     const { accessToken } = JSON.parse(tokenStr);
+  //     const decoded: DecodedToken = jwtDecode(accessToken);
+  //     //const now = Date.now() / 1000;
 
-      if (decoded.exp < now) {
-        handleLogout();
-      }
-    } catch (error) {
-      handleLogout(); // Malformed token
-    }
-  }, []);
+  //     // if (decoded.exp < now ) {
+  //     //   handleLogout();
+  //     // }
+  //   } catch (error) {
+  //     handleLogout(); // Malformed token
+  //   }
+  // }, []);
 
   // ✅ Global click to close dropdown and sidebar
   useEffect(() => {
