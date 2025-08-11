@@ -15,7 +15,7 @@ import { CardWrapper } from '@/components/Auth/card-wrapper'
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { LoadingSpinner } from '../ui/loading-spiner';
+
 // import { FormError } from '../form-error';
 // import { FormSuccess } from '../form-success';
 
@@ -113,8 +113,8 @@ export const LoginForm = () => {
                 >
                     <Link href="/forgot-password"> Forgot password</Link>
                 </Button>
-                 <Button type="submit" disabled={mutation.isLoading}>
-                    {mutation.isLoading ? "Logging in..." : "Login"}
+                 <Button type="submit" disabled={mutation.isPending}>
+                    {mutation.isPending? "Logging in..." : "Login"}
                 </Button>
             </form>
         </Form>
