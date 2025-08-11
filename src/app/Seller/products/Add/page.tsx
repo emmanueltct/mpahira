@@ -1,4 +1,4 @@
-// app/seller/product-entry/page.tsx
+
 
 import {ProductEntryForm} from "@/components/ProductEntryForm";
 
