@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -40,9 +40,18 @@ const paymentMethods = [
 ];
 
 export const ClientCheckout = () => {
-  const cartJson = localStorage.getItem("carts");
-  const cart = cartJson ? JSON.parse(cartJson) : null;
-  const cartData: CartData = cart ? cart[0] : null;
+
+  const [cart, setCart] = useState(null);
+
+  useEffect(() => {
+    const cartJson = localStorage.getItem("carts");
+    if (cartJson) {
+      setCart(JSON.parse(cartJson));
+    }
+  }, []);
+
+  // cartData depends on cart state after hydration
+  const cartData = cart ? cart[0] : null;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(paymentMethods[0].id);
