@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Your App Name",
+  title: "Mpahira Ltd",
   description: "Welcome to our professional e-commerce platform!",
   icons: {
     icon: "/favicon.ico",
