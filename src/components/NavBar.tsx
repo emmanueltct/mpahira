@@ -118,16 +118,17 @@ const NavBar = () => {
           <nav
             className={`${
               isOpen ? 'block' : 'hidden'
-            } absolute top-full left-0 w-full bg-white lg:bg-transparent lg:static lg:flex lg:space-x-6 lg:items-center`}
+            } absolute top-full left-0 w-full sm:bg-white bg-amber-300 justify-end-safe mr-[10%] lg:static lg:flex lg:space-x-6 lg:items-center`}
           >
             <Link href="/" className="block py-2 px-4 hover:text-amber-600">Home</Link>
             <Link href="/about" className="block py-2 px-4 hover:text-amber-600">About Us</Link>
             <Link href="/products" className="block py-2 px-4 hover:text-amber-600">Products</Link>
+              {isAuthenticated?(<Link href="/buyer/orders" className="block py-2 px-4 hover:text-amber-600">Orders</Link>):""}
             <Link href="/contact" className="block py-2 px-4 hover:text-amber-600">Contact</Link>
           </nav>
 
           {/* Icons and User Dropdown */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-between space-x-4 w-200">
             {isBuyer && (
               <>
                 <div className="relative cursor-pointer" onClick={() => toggleSidebar("notifications")}>
@@ -181,7 +182,7 @@ const NavBar = () => {
                     alt="avatar"
                     width={32}
                     height={32}
-                    className="rounded-full border-2 object-cover"
+                    className=" w-10 h-10 rounded-full border-2 object-cover"
                   />
                   <span className="text-gray-700 font-medium">{user.firstName}</span>
                   <FaChevronDown className="text-sm text-gray-900" />

@@ -19,7 +19,7 @@ export default function ProductPage() {
     priceMin: 0,
     priceMax: 0,
     page: 1,
-    limit: 5,
+    limit:8,
   });
 
   const [layout, setLayout] = useState<'grid' | 'list'>('grid');
