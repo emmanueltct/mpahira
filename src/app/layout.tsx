@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/context/auth-context";
 import NavBar from "@/components/NavBar";
 import { Toaster } from "react-hot-toast";
-import ReactQueryProvider from "@/components/ReactQueryProvider"; // 👈 import here
+import ReactQueryProvider from "@/components/ReactQueryProvider";
+
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 import "./globals.css";
-import LogoutListener from "@/components/LogoutListener";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,18 +35,18 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="antialiase text-gray-900">
-       
-        <ReactQueryProvider>
-          <AuthProvider>
-             <LogoutListener />
-            <NavBar />
-            <main className="min-h-screen mx-auto max-w-full">
-              {children}
-            </main>
-            <Toaster position="top-right" reverseOrder={false} />
-          </AuthProvider>
-        </ReactQueryProvider>
- 
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+          <ReactQueryProvider>
+            <AuthProvider>
+              
+              <NavBar />
+              <main className="min-h-screen mx-auto max-w-full">
+                {children}
+              </main>
+              <Toaster position="top-right" reverseOrder={false} />
+            </AuthProvider>
+          </ReactQueryProvider>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

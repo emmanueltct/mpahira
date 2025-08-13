@@ -1,227 +1,254 @@
-"use client";
+"use client"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "@/lib/axios";
 
-import { useState, useEffect } from 'react';
+// UI Components
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Table,
-  TableBody,
-  TableCell,
-  TableHead,
   TableHeader,
+  TableBody,
   TableRow,
+  TableHead,
+  TableCell,
 } from "@/components/ui/table";
+
+
+
+// Hooks & Types
+import { useCart } from "@/hooks/userCarts";
 import { CartItem } from "@/types/cart";
-import { Button } from "./ui/button";
+
+// Components
+import CartDetails from "./cartDetails";
 import DeliveryLocationCard from "./DeliverLocationCard";
-import Link from "next/link";
+import CheckoutPaymentCard from "./CheckoutPaymentCard";
 
-interface Location {
-  latitude: number;
-  longitude: number;
-  streetNumber?: string;
-  nearestLandmark?: string;
-  locationDescription?: string;
-}
+const fetchCarts = async () => {
+  const { data } = await axiosInstance.get("/carts");
+  return data;
+};
 
-interface CartData {
-  items: CartItem[];
-  totalAmount: number;
-  serviceCost: number;
-  transportCost: number;
-  generalTotal: number;
-  userId: string;
-  location: Location;
-  deliveryDistance: string;
-}
+export default function ClientCheckout() {
+  const [page] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-const paymentMethods = [
-  { id: "card", label: "Credit / Debit Card" },
-  { id: "mobile_money", label: "Mobile Money" },
-  { id: "paypal", label: "PayPal" },
-];
+  const [layout] = useState<"grid" | "list">("list");
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [cartProductDetails, setCartProductDetails] = useState<CartItem | null>(null);
+  const [isCartProductDetailsModalOpen, setIsCartProductDetailsModalOpen] = useState(false);
 
-export const ClientCheckout = () => {
+  const { updateCartItem, removeFromCart } = useCart();
 
-  const [cart, setCart] = useState(null);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["cart", page],
+    queryFn: fetchCarts,
+    keepPreviousData: true,
+  });
+
+  const cartItems = data?.carts?.[0]?.items || [];
 
   useEffect(() => {
-    const cartJson = localStorage.getItem("carts");
-    if (cartJson) {
-      setCart(JSON.parse(cartJson));
+    if (cartItems.length > 0) {
+      const initialQuantities: Record<string, number> = {};
+      cartItems.forEach((item: any) => {
+        initialQuantities[item.productId] = item.quantity;
+      });
+      setQuantities(initialQuantities);
     }
-  }, []);
+  }, [cartItems]);
 
-  // cartData depends on cart state after hydration
-  const cartData = cart ? cart[0] : null;
+  const handleChange = (productId: string, type: "inc" | "dec") => {
+    setQuantities((prev) => {
+      const newQty = type === "inc" ? prev[productId] + 1 : Math.max(1, prev[productId] - 1);
+      updateCartItem.mutate({ productId, quantity: newQty });
+      return { ...prev, [productId]: newQty };
+    });
+  };
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState(paymentMethods[0].id);
+  const handleBlur = (productId: string, quantity: number, originalQty: number) => {
+    if (quantity !== originalQty) {
+      updateCartItem.mutate({ productId, quantity });
+    }
+  };
 
-  if (!cartData) {
+  if (error) {
     return (
-      <div className="max-w-3xl mx-auto p-6 text-center text-red-600 font-semibold">
-        No cart data available.
+      <div className="container mx-auto px-4 py-10 text-center text-red-600">
+        Error loading carts. Please try again later.
       </div>
     );
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-10 space-y-14 bg-gray-50 ">
-      {/* Delivery Location + Payment Method Section */}
-        <h1 className="w-full text-2xl text-center  capitalize border-b-2 border-b-amber pb-2">Client Checkout Page</h1>
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        {/* Delivery Location */}
-        <div className="bg-white rounded-3xl shadow-xlp-6 flex flex-col">
-          <h2 className="text-2xl font-bold mb-5 border-b pb-3 border-amber-400">
-            Delivery Location
-          </h2>
-
-          {cartData.location ? (
-            <div className="text-gray-700 space-y-4 text-sm sm:text-base flex-grow">
-              <p>
-                <strong>Estimated Distance:</strong> {cartData.deliveryDistance}
-              </p>
-              <p>
-                <strong>Street Number:</strong> {cartData.location.streetNumber}
-              </p>
-              <p>
-                <strong>Nearest Landmark:</strong> {cartData.location.nearestLandmark}
-              </p>
-              <p>
-                <strong>Details:</strong> {cartData.location.locationDescription}
-              </p>
-            </div>
-          ) : (
-            <p className="text-gray-500 text-sm sm:text-base mb-4 flex-grow">
-              No delivery location set. Please add one.
-            </p>
-          )}
-
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="mt-6 bg-amber-400 hover:bg-amber-500 text-white font-semibold py-3 px-6 rounded-lg shadow-md w-full sm:w-auto self-start"
-          >
-            {cartData.location ? "Change Location" : "Set Location"}
+    <div className="container mx-auto px-4 py-20 sm:py-23">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">Total Item ({cartItems.length})</h1>
+        <div className="flex gap-2">
+         
+          <Button asChild>
+            <Link href="/products">Back to cart</Link>
           </Button>
         </div>
+      </div>
 
-        {/* Payment Method */}
-        <div className="bg-white rounded-3xl shadow-xl p-6 flex flex-col">
-          <h2 className="text-2xl font-bold mb-6 border-b pb-3 border-amber-400">
-            Payment Method
-          </h2>
+      {/* Modal for delivery location
+      <DeliveryLocationCard isModalOpen={isModalOpen} onClose={() => setIsModalOpen(false)} /> */}
 
-          <form className="space-y-5 text-gray-800 text-base font-medium flex-grow">
-            {paymentMethods.map(({ id, label }) => (
-              <label
-                key={id}
-                htmlFor={id}
-                className="flex items-center gap-4 cursor-pointer"
-              >
-                <input
-                  type="radio"
-                  id={id}
-                  name="paymentMethod"
-                  value={id}
-                  checked={selectedPayment === id}
-                  onChange={() => setSelectedPayment(id)}
-                  className="form-radio h-6 w-6 text-amber-400"
-                />
-                <span>{label}</span>
-              </label>
-            ))}
-          </form>
-
-          {/* <Button
-            onClick={() => alert(`Payment method selected: ${selectedPayment}`)}
-            className="mt-8 bg-amber-400 hover:bg-amber-500 text-white py-3 rounded-lg font-semibold shadow-md w-full"
-          >
-            Proceed to Pay
-          </Button> */}
+      {/* Loading / Empty States */}
+     
+      {!isLoading && cartItems.length === 0 && (
+        <div className="border rounded-lg p-8 shadow-sm space-y-3 w-1/2 mx-auto text-center">
+          You haven't added any items to your cart yet. Start shopping by adding your first product!
         </div>
-      </section>
+      )}
 
-      {/* Products + Order Summary Section */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Products List: span 2 cols on large */}
-        <div className="lg:col-span-2 bg-white rounded-3xl shadow-xl p-6 overflow-x-auto">
-          <h2 className="text-3xl font-extrabold mb-6 border-b pb-3 border-amber-400">
-            Your Products
-          </h2>
+      {/* Product Details Modal */}
+      {cartProductDetails && (
+        <CartDetails
+          productData={cartProductDetails}
+          isCartProductDetailsModalOpen={isCartProductDetailsModalOpen}
+          onClose={() => setIsCartProductDetailsModalOpen(false)}
+        />
+      )}
 
-          <Table className="min-w-[600px] sm:min-w-full text-sm sm:text-base">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-left">Product</TableHead>
-                <TableHead className="text-left hidden sm:table-cell">Unit</TableHead>
-                <TableHead className="text-right">Price</TableHead>
-                <TableHead className="text-right">Quantity</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {cartData.items.map((item) => (
-                <TableRow
-                  key={item.productId}
-                  className="border-t hover:bg-amber-50 transition-colors"
-                >
-                  <TableCell className="py-3">{item.productName?.product}</TableCell>
-                  <TableCell className="hidden sm:table-cell py-3">
-                    {item.productName?.unit}
-                  </TableCell>
-                  <TableCell className="text-right py-3">
-                    {item.unitPrice.toFixed(2)}
-                  </TableCell>
-                  <TableCell className="text-right py-3">{item.quantity}</TableCell>
-                  <TableCell className="text-right py-3 font-semibold">
-                    {(item.unitPrice * item.quantity).toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+      {/* Cart Layout */}
+      {!isLoading && cartItems.length > 0 && (
+        <>
+          {/* Desktop Table */}
+          <div className="w-full flex flex-col-reverse sm:flex-row mx-auto gap-4">
+            <div className=" w-full  sm:w-1/3">
 
-        {/* Order Summary */}
-        <div className="bg-white rounded-3xl shadow-xl p-6 flex flex-col">
-          <h2 className="text-3xl font-bold mb-6 border-b pb-3 border-amber-400 text-center">
-            Order Summary
-          </h2>
+           
+                <div className="block overflow-x-auto rounded-lg shadow-sm border mb-8">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead>Unit</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Total</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
 
-          <div className="space-y-5 text-gray-700 text-lg font-semibold flex-grow">
-            <div className="flex justify-between border-b pb-3">
-              <span>Items Total:</span>
-              <span>{cartData.totalAmount.toFixed(2)}</span>
+            {isLoading
+                ? Array.from({ length: 6 }).map((_, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell colSpan={7}>
+                        <div className="h-6 w-full bg-gray-200 animate-pulse rounded" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+              :cartItems.map((product: any) => (
+                        <TableRow key={product.productId}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar className="w-8 h-8">
+                                <AvatarImage
+                                  src={product.ShopProduct.productProfile}
+                                  alt={product.ShopProduct.productName.product}
+                                />
+                                <AvatarFallback>PR</AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium capitalize">
+                                {product.ShopProduct.productName.product}
+                              </span>
+                            </div>
+                          </TableCell>
+
+                          {/* Quantity Controls */}
+                          <TableCell>
+                            {product.quantity}
+                          </TableCell>
+                          <TableCell>{product.unit}</TableCell>
+                          <TableCell>{product.unitPrice}</TableCell>
+                          <TableCell>{product.totalPrice}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  {/* Summary + Actions with sticky behavior */}
+                  <div className=" bg-white p-4 shadow-lg mt-3 pr-8 sm:pr-10">
+                    <div className="space-y-3 text-gray-700 text-sm sm:text-md font-semibold">
+                      <div className="flex justify-between border-b pb-1">
+                        <span>Items Total:</span>
+                        <span>{data?.carts?.[0].totalAmount}</span>
+                      </div>
+                      <div className="flex justify-between border-b pb-1">
+                        <span>Transport Cost:</span>
+                        <span>{data?.carts?.[0].transportCost}</span>
+                      </div>
+                      <div className="flex justify-between border-b pb-1">
+                        <span>Service Charges:</span>
+                        <span>{data?.carts?.[0].serviceCost}</span>
+                      </div>
+                      <div className="flex justify-between pt-3 text-xl font-extrabold text-amber-500">
+                        <span>Grand Total:</span>
+                        <span>{data?.carts?.[0].generalTotal}</span>
+                      </div>
+                    </div>
+                    </div>
+                </div>
             </div>
-            <div className="flex justify-between border-b pb-3">
-              <span>Transport Cost:</span>
-              <span>{cartData.transportCost.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between border-b pb-3">
-              <span>Service Charges:</span>
-              <span>{cartData.serviceCost.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between pt-3 text-2xl font-extrabold text-amber-500">
-              <span>Grand Total:</span>
-              <span>{cartData.generalTotal.toFixed(2)}</span>
-            </div>
-          </div>
+              
 
-          <div className="mt-10 flex flex-col sm:flex-row gap-5 justify-center">
-            <Button className="bg-amber-400 hover:bg-amber-500 text-white py-3 rounded-lg font-semibold shadow-md flex-1">
-              Proceed to Pay
-            </Button>
-            <Link href={"/products"} className="bg-transparent border-2 border-amber-400 text-amber-400 hover:bg-amber-400 hover:text-white py-1 rounded-lg font-semibold flex-1 text-center">
-              back to product
-            </Link>
-          </div>
-        </div>
-      </section>
+              <div className="w-full  sm:w-1/3 mx-auto">
+                <div className="w-full mx-auto space-y-4 ">
+                  <p className="text-gray-600 text-sm sm:text-base text-center sm:text-left  w-[80%] mx-auto">
+                    Transport cost depends on the delivery location and its distance from the market. Changing the location will update the transport cost and affect the total payment.
+                  </p>
 
-      {/* Delivery Location Modal */}
-      <DeliveryLocationCard
-        isModalOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+                  {data?.carts?.[0].location ? (
+                    <div className="w-full sm:w-4/5 mx-auto bg-white rounded-2xl shadow-lg p-6 flex flex-col gap-3 border border-amber-200">
+                      <h2 className="text-lg font-semibold border-b-2 border-amber-400 pb-2 mb-3">
+                        <span className="text-amber-500">📍</span> Client Delivery Location
+                      </h2>
+
+                      <div className="flex flex-col gap-1 text-gray-700 text-sm sm:text-base">
+                        <span><strong>Estimated Distance:</strong> {data?.carts?.[0].deliveryDistance}</span>
+                        <span><strong>Street Number:</strong> {data?.carts?.[0].location.streetNumber}</span>
+                        <span><strong>Nearest Landmark:</strong> {data?.carts?.[0].location.nearestLandmark}</span>
+                        <span><strong>Details:</strong> {data?.carts?.[0].location.locationDescription}</span>
+                      </div>
+
+                      <Button onClick={() => setIsModalOpen(true)} className="self-start mt-3 bg-amber-400 hover:bg-amber-500 text-white font-semibold px-4 py-2 rounded-lg shadow-md">
+                        Change Location 
+                      </Button> 
+                    </div>
+                  ) : (
+                    <div className="w-full sm:w-4/5 mx-auto bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center gap-3 border border-amber-200">
+                      <h2 className="text-lg font-semibold border-b-2 border-amber-400 pb-2 mb-3 w-full text-center sm:text-left">
+                        <span className="text-amber-500">📍</span> Client Delivery Location
+                      </h2>
+
+                      <p className="text-gray-600 text-sm sm:text-base text-center sm:text-left">
+                        No delivery location set yet. Click below to add one.
+                      </p>
+
+                      <Button className="bg-amber-400 hover:bg-amber-500 text-white font-semibold px-4 py-2 rounded-lg shadow-md" >
+                        Set Location 
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Location modal */}
+                  <DeliveryLocationCard isModalOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+                </div>
+
+              </div>
+              <div className="w-full  sm:w-1/3" >
+                  <CheckoutPaymentCard itemTotal={data?.carts?.[0].totalAmount} transportCost={data?.carts?.[0].transportCost} serviceCost={data?.carts?.[0].serviceCost} generalTotal={data?.carts?.[0].generalTotal} telephone={data?.carts?.[0].buyer.telephone}/>
+              </div>
+            </div>
+
+        </>
+      )}
     </div>
   );
-};
+}

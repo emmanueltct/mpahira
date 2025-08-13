@@ -1,42 +1,42 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { CartItem, Cart } from '@/types/cart';
+// import { OrderItem, Order } from '@/types/Order';
 import axiosInstance from '@/lib/axios';
 import { useRouter } from "next/navigation"; // If using Next.js 13+
 
 
-export const useCart = () => {
+export const useOrder = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  // Fetch cart
+  // Fetch Order
 
 
-const cartQuery = useQuery({
-  queryKey: ['cart'],
+const orderQuery = useQuery({
+  queryKey: ['Order'],
   queryFn: async () => {
-    const res = await axiosInstance.get('/carts');
-    console.log("===============================================================",res.data.carts)
-    return res.data.carts;
+    const res = await axiosInstance.get('/Orders');
+    console.log("===============================================================",res.data.Orders)
+    return res.data.Orders;
   },
   enabled: false, // disable auto fetch on mount
 });
 
 // When you want to fetch:
-cartQuery.refetch();
+// orderQuery.refetch();
 
 
 
-  // Add to cart
+  // Add to Order
 
-  const addToCart = useMutation({
-  mutationFn: async (item: CartItemPayload) => {
-    const response = await axiosInstance.post("/carts", item);
+  const addToOrder = useMutation({
+  mutationFn: async (item) => {
+    const response = await axiosInstance.post("/Orders", item);
     return response.data;
   },
   onSuccess: (data) => {
-     queryClient.invalidateQueries({ queryKey: ['cart'] });
+     queryClient.invalidateQueries({ queryKey: ['Order'] });
     if (data.message) {
    
       toast.success(data.message)
@@ -53,27 +53,27 @@ cartQuery.refetch();
   },
 });
   
-  const updateCartItem = useMutation({
+  const updateOrderItem = useMutation({
     mutationFn: async ({productId,quantity}:{productId: string; quantity: number;}) => {
-      const res = await axiosInstance.patch('/carts/update', {
+      const res = await axiosInstance.patch('/Orders/update', {
         productId:productId,
         quantity:quantity,
       });
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ['Order'] });
     },
     onError: (error) => {
-      console.error('Error updating cart item:', error);
+      console.error('Error updating Order item:', error);
     },
   });
 
-  // Remove item from cart
-  const removeFromCart = useMutation({
-    mutationFn: async(productId: string) => await axiosInstance.delete(`/carts/${productId}`),
+  // Remove item from Order
+  const removeFromOrder = useMutation({
+    mutationFn: async(productId: string) => await axiosInstance.delete(`/Orders/${productId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ['Order'] });
     },
   });
 
@@ -108,10 +108,10 @@ cartQuery.refetch();
 
 
   return {
-    cartQuery,
-    addToCart,
-    updateCartItem,
-    removeFromCart,
+    orderQuery,
+    addToOrder,
+    updateOrderItem,
+    removeFromOrder,
     clientCheckout
   };
 };
