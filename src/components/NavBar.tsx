@@ -15,9 +15,7 @@ import {
 import SidebarPanel from './SidebarPanel';
 import { jwtDecode } from 'jwt-decode';
 
-interface DecodedToken {
-  exp: number;
-}
+
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +29,7 @@ const NavBar = () => {
   const { user, logout } = useAuth();
   const { cartQuery } = useCart();
 
-  const isBuyer = user?.role === 'Buyer';
+  const isBuyer = user?.role ||user?.role.role === 'Buyer';
   const isAuthenticated = !!user;
 
   const cartCount = cartQuery.data?.reduce((acc, cart) => acc + cart.items.length, 0) ?? 0;
@@ -46,11 +44,11 @@ const NavBar = () => {
   setNow(Date.now());
 }, []);
 
-  // const handleLogout = () => {
-  //   localStorage.removeItem('tokens');
-  //   logout?.(); // In case your auth-context provides it
-  //   router.push('/login');
-  // };
+  const handleLogout = () => {
+    localStorage.removeItem('tokens');
+    logout?.(); // In case your auth-context provides it
+    router.push('/login');
+  };
 
   // ✅ Auto-logout if token is missing or expired
   // useEffect(() => {
@@ -133,30 +131,32 @@ const NavBar = () => {
             {isBuyer && (
               <>
                 <div className="relative cursor-pointer" onClick={() => toggleSidebar("notifications")}>
-                  <FaBell className="text-gray-700 text-lg" />
+                  <FaBell className="text-gray-700 text-lg" size={22} />
                   {notificationCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">
+                    <span className="absolute -top-2 -right-3 bg-red-600 text-center text-white text-mx rounded-full px-1 w-5 h-5">
                       {notificationCount}
                     </span>
                   )}
                 </div>
 
                 <div className="relative cursor-pointer" onClick={() => toggleSidebar("wishlist")}>
-                  <FaHeart className="text-gray-700 text-lg" />
+                  <FaHeart className="text-gray-700 text-lg" size={22} />
                   {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">
+                    <span className="absolute -top-2 -right-3 bg-red-600 text-center text-white text-mx rounded-full px-1 w-5 h-5">
                       {wishlistCount}
                     </span>
                   )}
                 </div>
 
                 <div className="relative cursor-pointer" onClick={() => toggleSidebar("carts")}>
-                  <FaShoppingCart className="text-gray-700 text-lg" />
+                <Link href={"/buyer/carts"}>
+                  <FaShoppingCart className="text-gray-700 text-lg" size={22} />
                   {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">
+                    <span className="absolute -top-2 -right-3 bg-red-600 text-center text-white text-mx rounded-full px-1 w-5 h-5">
                       {cartCount}
                     </span>
                   )}
+                  </Link>
                 </div>
               </>
             )}
@@ -205,7 +205,7 @@ const NavBar = () => {
         </div>
       </header>
 
-      {/* Sidebar */}
+      {/* Sidebar
       {sidebarType && (
         <SidebarPanel
           id="sidebar-panel"
@@ -213,7 +213,7 @@ const NavBar = () => {
           type={sidebarType}
           onClose={() => setSidebarType(null)}
         />
-      )}
+      )} */}
     </>
   );
 };

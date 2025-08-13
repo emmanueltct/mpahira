@@ -1,27 +1,38 @@
 "use client";
 
-import React from 'react'
-import {useForm} from "react-hook-form";
-import * as z from "zod"
-
-import { useRouter } from 'next/navigation';
-import { toast } from 'react-hot-toast';
-
-import { LoginSchema } from '@/schemas';
-import { zodResolver } from '@hookform/resolvers/zod';
-import {Form,FormControl,FormField,FormItem,FormLabel,FormMessage} from "@/components/ui/form"
-
-import { CardWrapper } from '@/components/Auth/card-wrapper'
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-
-// import { FormError } from '../form-error';
-// import { FormSuccess } from '../form-success';
-
+import React from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
+import { LoginSchema } from "@/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { CardWrapper } from "@/components/Auth/card-wrapper";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-import axiosInstance from '@/lib/axios';
+import axiosInstance from "@/lib/axios";
+
+// Google Auth imports
+import { GoogleLogin } from "@react-oauth/google";
+import {jwtDecode} from "jwt-decode";
+
+interface GooglePayload {
+  name: string;
+  email: string;
+  picture: string;
+  sub: string;
+}
 
 export const LoginForm = () => {
   const { login } = useAuth();
@@ -35,18 +46,19 @@ export const LoginForm = () => {
     },
   });
 
+  // Normal login mutation
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof LoginSchema>) => {
-      const res=await axiosInstance.post("/auth/login", data)
+      const res = await axiosInstance.post("/auth/login", data);
       return res.data;
     },
     onSuccess: (data) => {
-      login(data.user,data.tokens); // save to context
+      login(data.user, data.tokens); // save to context
       toast.success("Login successful!");
       if (data.user.role !== "Buyer") {
         router.push(`/${data.user.role}/dashboard`);
-      }else{
-         router.push(`/`);
+      } else {
+        router.push(`/`);
       }
     },
     onError: (error: any) => {
@@ -54,71 +66,102 @@ export const LoginForm = () => {
     },
   });
 
+  // Google login handler
+  const handleGoogleLogin = () => {
+    try {
+      
+      window.location.href = "http://localhost:5500/api/auth/google"
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Google login failed");
+    }
+  };
+
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
     mutation.mutate(values);
   };
-  return (
-    
-    <CardWrapper 
-    headerLabel="Welcome back !! please login to access our services"
-    headerTitle="Login page"
-    backButtonLabel="Don't have an account?"
-    backButtonHref="/Register"
-    showSocial
-    >
-        {/* <FormError message="Something went wrong !"/>
-        <FormSuccess message="Login Succeed!"/> */}
-        <Form{...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}
-               className="space-y-6"
-            >
-                <div className="space-y-4">
-                <FormField 
-                    control={form.control} 
-                    name="email"
-                    render={({field})=>(
-                        <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                                <Input {...field}
-                                 placeholder="emmanuel@gmail.com"
-                                 type="email"
-                                />
-                            </FormControl>
-                            <FormMessage/>
-                        </FormItem>
-                    )}/>
-                {/* password form field start here */}
-                 <FormField 
-                    control={form.control} 
-                    name="password"
-                    render={({field})=>(
-                        <FormItem>
-                            <FormLabel>Paswword</FormLabel>
-                            <FormControl>
-                                <Input {...field}
-                                 placeholder="********"
-                                 type="password"
-                                />
-                            </FormControl>
-                            <FormMessage/>
-                        </FormItem>
-                    )}/>
-                </div>
-                <Button
-                    variant="link"
-                    className="font-normal w-full"
-                    size="sm"
-                    asChild
-                >
-                    <Link href="/forgot-password"> Forgot password</Link>
-                </Button>
-                 <Button type="submit" disabled={mutation.isPending}>
-                    {mutation.isPending? "Logging in..." : "Login"}
-                </Button>
-            </form>
-        </Form>
-    </CardWrapper>
-  )
-}
 
+  return (
+    <CardWrapper
+      headerLabel="Welcome back !! please login to access our services"
+      headerTitle=""
+      backButtonLabel="Don't have an account?"
+      backButtonHref="/register"
+    >
+
+        <div className="mt-4 w-full flex justify-center">
+        <GoogleLogin
+          onSuccess={handleGoogleLogin}
+          onError={() => toast.error("Google login failed")}
+        />
+      </div>
+
+        <div className="flex w-full items-center mt-6 mb-6" >
+          <span className="w-1/3 h-1 bg-pink-400 "></span>
+          <span className="w-1/3 text-center">Or</span>
+          <span className="w-1/3 h-1 bg-pink-400 "></span>
+      </div>
+
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="emmanuel@gmail.com"
+                      type="email"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="********"
+                      type="password"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <Button
+            variant="link"
+            className="font-normal w-full"
+            size="sm"
+            asChild
+          >
+            <Link href="/forgot-password">Forgot password</Link>
+          </Button>
+
+          <Button type="submit" disabled={mutation.isPending} variant="default" className="w-full" >
+            {mutation.isPending ? "Logging in..." : "Login"}
+          </Button>
+        </form>
+      </Form>
+
+    
+
+      {/* Google Login Button */}
+    
+    </CardWrapper>
+  );
+};

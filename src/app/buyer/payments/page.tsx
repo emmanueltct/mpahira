@@ -1,6 +1,6 @@
 
 
-import {ClientCheckout} from "@/components/clientCheckout";
+import ClientCheckout from "@/components/clientCheckout";
 
 export default function Checkout() {
    

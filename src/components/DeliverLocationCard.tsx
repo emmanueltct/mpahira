@@ -137,7 +137,7 @@ const DeliveryLocationCard: React.FC<DeliveryLocationCardProps> = ({ isModalOpen
 
   return (
     <Dialog open={isModalOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg p-6 rounded-2xl">
+      <DialogContent className="max-w-lg mx-auto w-[90%] p-6 rounded-2xl">
         <DialogHeader>
           <DialogTitle>Change Delivery Location</DialogTitle>
           <DialogDescription>

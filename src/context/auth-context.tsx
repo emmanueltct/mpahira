@@ -1,13 +1,16 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { createContext, useState, useEffect, useContext } from "react";
+import toast from "react-hot-toast";
+import axiosInstance from "@/lib/axios";
 
 type User = {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: "Buyer" | "admin" | "seller";
+  role: "buyer" | "admin" | "seller";
 };
 
 type Tokens = {
@@ -25,7 +28,7 @@ type AuthContextType = {
 // Create the context
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-// Create and export the useAuth hook
+// Hook for using auth
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -34,11 +37,12 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// AuthProvider definition
+// AuthProvider
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [tokens, setTokens] = useState<Tokens | null>(null);
 
+  // Load from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedTokens = localStorage.getItem("tokens");
@@ -50,10 +54,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (userData: User, tokensData: Tokens) => {
     setUser(userData);
     setTokens(tokensData);
+
     localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("refresh_token", JSON.stringify(tokensData.refreshToken));
-    localStorage.setItem("access_token", JSON.stringify(tokensData.accessToken));
-     localStorage.setItem("tokens", JSON.stringify(tokensData));
+    localStorage.setItem("tokens", JSON.stringify(tokensData));
+    localStorage.setItem("accessToken", tokensData.accessToken);
   };
 
   const logout = () => {
@@ -61,6 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setTokens(null);
     localStorage.removeItem("user");
     localStorage.removeItem("tokens");
+    localStorage.removeItem("accessToken");
   };
 
   return (
@@ -68,4 +73,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+// Custom hook for logged-in user profile
+export const useLoggedInUserProfile = () => {
+  return useQuery({
+    queryKey: ["loggedinUserProfile"],
+    queryFn: async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        throw new Error("No access token found in localStorage");
+      }
+      const res = await axiosInstance.get("/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data;
+    },
+    enabled: !!localStorage.getItem("accessToken"),
+  });
 };
