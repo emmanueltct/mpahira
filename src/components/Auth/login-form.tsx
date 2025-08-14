@@ -70,7 +70,7 @@ export const LoginForm = () => {
   const handleGoogleLogin = () => {
     try {
       
-      window.location.href = "http://localhost:5500/api/auth/google"
+      window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Google login failed");
     }
