@@ -41,7 +41,7 @@ export default function ClientCheckout() {
   const [cartProductDetails, setCartProductDetails] = useState<CartItem | null>(null);
   const [isCartProductDetailsModalOpen, setIsCartProductDetailsModalOpen] = useState(false);
 
-  const { updateCartItem, removeFromCart } = useCart();
+  const { updateCartItem} = useCart();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["cart", page],

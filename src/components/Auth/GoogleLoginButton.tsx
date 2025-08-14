@@ -15,7 +15,7 @@ export function GoogleLoginButton() {
     onSuccess: async (tokenResponse) => {
       try {
         // Send tokenResponse.access_token to your backend to verify & get user
-        const res = await axios.post('http://localhost:5500/api/auth/google/token', {
+        const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/google/token`, {
           access_token: tokenResponse.access_token,
         });
 

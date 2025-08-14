@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
+import axiosInstance from '@/lib/axios';
 import Slider from '@mui/material/Slider';
 import { Box } from '@mui/material';
 
@@ -46,13 +47,13 @@ export const FilterSidebar = ({ filters, setFilters }: FilterProps) => {
   // Fetch categories
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['categories'],
-    queryFn: async () => (await axios.get('http://localhost:5500/api/products')).data,
+    queryFn: async () => (await axiosInstance.get('/products')).data,
   });
 
   // Fetch markets
   const { data: markets = [] } = useQuery<Market[]>({
     queryKey: ['markets'],
-    queryFn: async () => (await axios.get('http://localhost:5500/api/market')).data,
+    queryFn: async () => (await axiosInstance.get('/market')).data,
   });
 
   // Handle slider change

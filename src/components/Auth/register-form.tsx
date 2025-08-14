@@ -10,12 +10,11 @@ import * as z from "zod"
 import { RegisterSchema } from '@/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {Form,FormControl,FormField,FormItem,FormLabel,FormMessage} from "@/components/ui/form"
-
 import { CardWrapper } from '@/components/Auth/card-wrapper'
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { FormError } from '../form-error';
 import { LoadingSpinner } from '../ui/loading-spiner';
+import axiosInstance from '@/lib/axios';
 
 // import { FormSuccess } from '../form-success';
 
@@ -41,9 +40,9 @@ export const RegisterForm = () => {
            setServerError(""); // reset previous error
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:5500/api/auth/signup", values); // replace with your API
+      const res = await axiosInstance.post("/auth/signup", values); // replace with your API
       console.log("Success:", res.data);
-      router.push('/Login');
+      router.push('/login');
         toast.success('Registration successful!', {
         duration: 3000, // optional: show toast for 3 seconds
         });
@@ -73,8 +72,8 @@ export const RegisterForm = () => {
     headerLabel="Welcome to our platform !! please if it's your first time create account to access our services"
    headerTitle="Signup page"
     backButtonLabel="I already have an account?"
-    backButtonHref="/Login"
-    showSocial
+    backButtonHref="/login"
+ 
     >
     
 {/*         

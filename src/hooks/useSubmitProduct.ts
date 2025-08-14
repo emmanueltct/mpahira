@@ -1,4 +1,5 @@
 // hooks/useSubmitProduct.ts]import { useMutation } from "@tanstack/react-query";
+import axiosInstance from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -9,8 +10,8 @@ export const useCreateShopProduct = () => {
       const tokensData = typeof window !== 'undefined' ? localStorage.getItem('tokens') : null;
       const token = tokensData ? JSON.parse(tokensData) : null;
 
-      const res = await axios.post(
-        'http://localhost:5500/api/shop-products',
+      const res = await axiosInstance.post(
+        '/shop-products',
         formData,
         {
           headers: {
