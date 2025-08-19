@@ -3,7 +3,8 @@
 import React from "react";
 
 import ClientOrdersList from "@/components/clientOrders";
+import DefaultLayout from "@/components/defaultLayout";
 
 export default function Page() {
-  return <ClientOrdersList/>;
+  return  <DefaultLayout><ClientOrdersList/></DefaultLayout>;
 }

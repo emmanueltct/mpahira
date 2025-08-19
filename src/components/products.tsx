@@ -9,6 +9,7 @@ import { LayoutToggle } from '@/components/LayoutToggle';
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import axios from "axios";
+import LoadingSkeloton from './loadingSkeloton';
 
 export default function ProductPage() {
   // Add searchTerm to filters state
@@ -19,7 +20,7 @@ export default function ProductPage() {
     priceMin: 0,
     priceMax: 0,
     page: 1,
-    limit:8,
+    limit:12,
   });
 
   const [layout, setLayout] = useState<'grid' | 'list'>('grid');
@@ -54,9 +55,9 @@ interface CartItem {
 // Mutation function to add item to cart (POST)
 
   return (
-    <div className="relative w-full items-center justify-between">
+    <div className="relative w-full items-center justify-between container mx-auto ">
       {/* Search input - always visible on mobile and desktop */}
-      <div className="p-4 flex flex-col-reverse sm:flex-row justify-around items-center max-w-full sm:max-w-full space-x-4 border-b bg-white sticky top-15 z-20 gap-3">
+      <div className="p-4 flex flex-col-reverse sm:flex-row justify-around items-center max-w-full sm:max-w-full space-x-4 bg-slate-50 border-b sm:sticky mt-30 sm:mt-5  sm:top-15 z-20 gap-3">
          <div className=' flex items-end justify-between  w-full sm:w-1/2  p-5 '>
         <input
           type="search"
@@ -85,16 +86,16 @@ interface CartItem {
       {/* Main flex container */}
       <div className="flex ">
         {/* Sidebar filters visible on md+ */}
-        <div className="hidden md:block w-100 p-4 border-r sticky top-14 h-[calc(100vh-6rem)] overflow-auto">
+        <div className="hidden md:block w-100 p-4 border-r sticky top-45 h-[calc(100vh-6rem)] overflow-auto">
           <FilterSidebar filters={filters} setFilters={setFilters} />
         </div>
 
         {/* Main product content */}
-        <main className="flex-1 p-4 mt-23  container mx-auto">
+        <main className="flex-1 p-4 mt-2 sm:mt-2 ">
           {isLoading ? (
-            <p>Loading...</p>
-          ) : (
-            <div className={layout === 'grid' ? 'grid grid-cols-1 md:grid-cols-4 sm:grid-cols-5 gap-4  place-items-center' : 'space-y-2 flex flex-col w-full items-center'}>
+            <LoadingSkeloton/>
+       ) : (
+            <div className={layout === 'grid' ? 'grid grid-cols-1 md:grid-cols-4 sm:grid-cols-5 gap-10 place-items-center' : 'space-y-4 flex flex-col w-full items-center'}>
               {data.data.map((product: any) => (
                 <ProductCard key={product.id} product={product} layout={layout} />
               ))}
@@ -111,7 +112,7 @@ interface CartItem {
 
       {/* Mobile Filter Overlay */}
       {showMobileFilter && (
-        <div className="fixed inset-0 bg-white z-50 p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-white z-50 p-4 overflow-y-auto ">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Filters</h3>
             <button

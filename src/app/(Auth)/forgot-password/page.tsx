@@ -1,8 +1,10 @@
 
 import { ForgotPasswordForm } from '@/components/Auth/forgot-password-form'
+import DefaultLayout from '@/components/defaultLayout'
 import React from 'react'
 const ForgotPasswordPage=()=> {
   return (
+    <DefaultLayout>
     <main className='flex  h-full flex-col items-center justify-center bg-slate-50'>
         <div className='space-y-6'>
             {/* <h1 className='text-6xl font-semibold text-black drop-shadow-md'>
@@ -23,6 +25,7 @@ const ForgotPasswordPage=()=> {
             </div>
         </div>
     </main>
+    </DefaultLayout>
   )
 }
 

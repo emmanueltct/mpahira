@@ -47,7 +47,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
     ? Math.round(((product.price - (product.discountPrice ?? 0)) / product.price) * 100)
     : 0;
 
-  
+  console.log("::::::::::::::::::::::::::::::::::::::::::::::::::::::::",product)
     const handleCartItem = ({
         productId,
         Unit,
@@ -75,15 +75,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
     <Card
       sx={{
         display: layout === 'list' ? 'flex' : 'block',
-        p: 2,
+        p:1,
         borderRadius: 3,
-        boxShadow: 4,
-        maxWidth: layout === 'grid' ? 340 : '95%',
+        boxShadow:0,
+        maxWidth: layout === 'grid' ? 300 : '95%',
         cursor: 'pointer',
         position: 'relative',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
         '&:hover': {
-          boxShadow: 8,
+          boxShadow:2,
           transform: 'scale(1.03)',
         },
         bgcolor: 'background.paper',
@@ -96,7 +96,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
           alt={product.productName.product}
           sx={{
             width: layout === 'list' ? 160 : '100%',
-            height: layout === 'list' ? 160 : 200,
+            height: layout === 'list' ? 140 : 170,
             objectFit: 'cover',
             transition: 'transform 0.3s ease',
             '&:hover': {
@@ -142,23 +142,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
           flexDirection: 'column',
           justifyContent: 'center',
           textAlign: layout === 'list' ? 'left' : 'center',
-          gap: 0.7,
+          gap: 0.2,
           px: 0,
-          py: 1,
+          py:0.5,
         }}
       >
-        <Typography variant="h6" noWrap title={product.productName.product} fontWeight={700}>
+        <Typography variant="h6" noWrap title={product.productName.product} fontWeight={700} fontSize={18}>
           {product.productName.product}
         </Typography>
-
         <Typography
           variant="subtitle2"
           color="text.secondary"
           noWrap
-          title={product.marketName}
+          title={product.shopName.market.marketName}
           fontStyle="italic"
         >
-          {product.marketName}
+          {product.shopName.market.marketName} - {product.shopName.brandName}
         </Typography>
 
         <Box sx={{ display: 'flex', justifyContent: layout === 'list' ? 'flex-start' : 'center', alignItems: 'center', mt: 0.5 }}>
@@ -177,24 +176,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: layout === 'list' ? 'flex-start' : 'center', gap: 1, alignItems: 'center', mt: 1 }}>
-          {hasDiscount ? (
+        <Box sx={{ display: 'flex', justifyContent: layout === 'list' ? 'flex-start' : 'center', gap: 1, alignItems: 'center', mt: 0.5 }}>
+          {!hasDiscount ? (
             <>
               <Typography variant="h6" color="error" fontWeight="bold">
-                {(product.discountPrice ?? 0)} RWF
+                {(product.discountPrice ?? 1000)} RWF
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                {product.price} RWF
+                {product.price || 2000}  RWF
               </Typography>
             </>
           ) : (
             <Typography variant="h6" fontWeight="bold">
-              {product.price} RWF
+              {product.price || 2000} RWF
             </Typography>
           )}
         </Box>
 
-        <Stack direction="row" spacing={1.5} justifyContent={layout === 'list' ? 'flex-start' : 'center'} sx={{ mt: 1.5 }}>
+        <Stack direction="row" spacing={2} justifyContent={layout === 'list' ? 'flex-start' : 'center'} sx={{ mt:1 }}>
           <Tooltip title="Add to wishlist">
             <IconButton size="small" color="error">
               <FavoriteBorderIcon />
@@ -217,11 +216,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Like">
+          {/* <Tooltip title="Like">
             <IconButton size="small" color="success">
               <ThumbUpOffAltIcon />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
         </Stack>
       </CardContent>
     </Card>

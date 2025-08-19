@@ -1,8 +1,10 @@
 
 import { LoginForm } from '@/components/Auth/login-form'
+import DefaultLayout from '@/components/defaultLayout'
 import React from 'react'
 const LoginPage=()=> {
   return (
+    <DefaultLayout>
     <main className='flex min-h-screen max-w-full flex-col items-center justify-center   bg-slate-50'>
         <div className='space-y-6'>
             {/* <h1 className='text-6xl font-semibold text-black drop-shadow-md'>
@@ -14,15 +16,12 @@ const LoginPage=()=> {
              */}
             <div >
               <LoginForm/>
-              {/* <LoginButton>
-                <Button variant="secondary" size="lg">
-                   Signi in
-                </Button>
-              </LoginButton> */}
+             
               
             </div>
         </div>
     </main>
+   </DefaultLayout>
   )
 }
 

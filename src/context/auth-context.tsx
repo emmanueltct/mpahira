@@ -1,8 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { createContext, useState, useEffect, useContext } from "react";
-import toast from "react-hot-toast";
+import { createContext, useState, useEffect } from "react";
+import Cookies from "js-cookie";
 import axiosInstance from "@/lib/axios";
 
 type User = {
@@ -10,7 +9,7 @@ type User = {
   firstName: string;
   lastName: string;
   email: string;
-  role: "buyer" | "admin" | "seller";
+  role: "buyer" | "admin" | "seller"|"agent";
 };
 
 type Tokens = {
@@ -18,37 +17,39 @@ type Tokens = {
   refreshToken: string;
 };
 
-type AuthContextType = {
+export type AuthContextType = {
   user: User | null;
   tokens: Tokens | null;
   login: (userData: User, tokens: Tokens) => void;
   logout: () => void;
+  isAuthenticated: boolean;
 };
 
-// Create the context
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-// Hook for using auth
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
-
-// AuthProvider
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [tokens, setTokens] = useState<Tokens | null>(null);
 
-  // Load from localStorage on mount
+  // Load from storage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedTokens = localStorage.getItem("tokens");
 
     if (storedUser) setUser(JSON.parse(storedUser));
     if (storedTokens) setTokens(JSON.parse(storedTokens));
+
+    // 👇 listen for forced logout from axios interceptors
+    const handleLogoutEvent = () => {
+      setUser(null);
+      setTokens(null);
+      Cookies.remove("user");
+    };
+    window.addEventListener("logout", handleLogoutEvent);
+
+    return () => {
+      window.removeEventListener("logout", handleLogoutEvent);
+    };
   }, []);
 
   const login = (userData: User, tokensData: Tokens) => {
@@ -57,38 +58,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("tokens", JSON.stringify(tokensData));
-    localStorage.setItem("accessToken", tokensData.accessToken);
+
+    // 👇 sync user to cookie for middleware
+    Cookies.set("user", JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
     setTokens(null);
+
     localStorage.removeItem("user");
     localStorage.removeItem("tokens");
-    localStorage.removeItem("accessToken");
+
+    Cookies.remove("user");
   };
 
   return (
-    <AuthContext.Provider value={{ user, tokens, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        tokens,
+        login,
+        logout,
+        isAuthenticated: !!tokens,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-};
-
-// Custom hook for logged-in user profile
-export const useLoggedInUserProfile = () => {
-  return useQuery({
-    queryKey: ["loggedinUserProfile"],
-    queryFn: async () => {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        throw new Error("No access token found in localStorage");
-      }
-      const res = await axiosInstance.get("/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return res.data;
-    },
-    enabled: !!localStorage.getItem("accessToken"),
-  });
 };

@@ -1,5 +1,4 @@
-
-
+'use client';
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -33,16 +32,23 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import ImageCard from "./ImageCard";
+
+import ImageCard from "../ImageCard";
 
 const fetchProducts = async (page: number) => {
   const { data } = await axiosInstance.get("/shop-products", { params: { page } });
   return data;
 };
 
-export default function ProductListPage() {
+export default function AdminProductListPage() {
   const [page, setPage] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+
+  // Filters
+  const [productFilter, setProductFilter] = useState("");
+  const [shopFilter, setShopFilter] = useState("");
+  const [sellerFilter, setSellerFilter] = useState("");
+  const [marketFilter, setMarketFilter] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["products", page],
@@ -50,15 +56,62 @@ export default function ProductListPage() {
     keepPreviousData: true,
   });
 
+  // Apply filters
+  const filteredData = data?.data?.filter((product: any) => {
+    const productName = product.productName.product.toLowerCase();
+    const shopName = product.shopName.brandName.toLowerCase();
+    const sellerName = `${product.shopName.seller.firstName} ${product.shopName.seller.lastName}`.toLowerCase();
+    const marketName = product.shopName.market.marketName.toLowerCase();
+
+    return (
+      productName.includes(productFilter.toLowerCase()) &&
+      shopName.includes(shopFilter.toLowerCase()) &&
+      sellerName.includes(sellerFilter.toLowerCase()) &&
+      marketName.includes(marketFilter.toLowerCase())
+    );
+  });
+
   return (
     <div className="container mx-auto px-4 py-10">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">
-          Products ({data?.total ?? 0})
+          Products ({filteredData?.length ?? 0})
         </h1>
         <Button asChild>
           <Link href="/seller/products/Add">Add Product</Link>
         </Button>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-4 mb-6">
+        <input
+          type="text"
+          placeholder="Filter by Product"
+          value={productFilter}
+          onChange={(e) => setProductFilter(e.target.value)}
+          className="border rounded p-2"
+        />
+        <input
+          type="text"
+          placeholder="Filter by Shop"
+          value={shopFilter}
+          onChange={(e) => setShopFilter(e.target.value)}
+          className="border rounded p-2"
+        />
+        <input
+          type="text"
+          placeholder="Filter by Seller"
+          value={sellerFilter}
+          onChange={(e) => setSellerFilter(e.target.value)}
+          className="border rounded p-2"
+        />
+        <input
+          type="text"
+          placeholder="Filter by Market"
+          value={marketFilter}
+          onChange={(e) => setMarketFilter(e.target.value)}
+          className="border rounded p-2"
+        />
       </div>
 
       {/* Responsive Table for large screens */}
@@ -67,6 +120,8 @@ export default function ProductListPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Product</TableHead>
+              <TableHead>Kinyarwanda</TableHead>
+              <TableHead>Category</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Shop</TableHead>
               <TableHead>Seller</TableHead>
@@ -84,17 +139,19 @@ export default function ProductListPage() {
                     </TableCell>
                   </TableRow>
                 ))
-              : data?.data?.map((product: any) => (
+              : filteredData?.map((product: any) => (
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="w-8 h-8">
-                          <AvatarImage src={product.productProfile} alt={product.productName.product} />
+                          <AvatarImage src={product.productProfile} alt={product.engLabel} />
                           <AvatarFallback>PR</AvatarFallback>
                         </Avatar>
-                        <span className="font-medium capitalize">{product.productName.product}</span>
+                        <span className="font-medium capitalize">{product.engLabel}</span>
                       </div>
                     </TableCell>
+                    <TableCell>{product.kinyLabel}</TableCell>
+                    <TableCell>{product.productName.product}</TableCell>
                     <TableCell className="max-w-[200px] truncate">{product.productDescription}</TableCell>
                     <TableCell className="capitalize">{product.shopName.brandName}</TableCell>
                     <TableCell className="capitalize">
@@ -103,12 +160,13 @@ export default function ProductListPage() {
                     <TableCell className="capitalize">{product.shopName.market.marketName}</TableCell>
                     <TableCell className="space-x-1">
                       {product.isAvailable ? (
-                        <Badge variant="success">Available</Badge>
+                        <Badge variant="default">Available</Badge>
                       ) : (
                         <Badge variant="destructive">Unavailable</Badge>
                       )}
-                      {product.isExpires && <Badge variant="outline">Expires Soon</Badge>}
+                    
                     </TableCell>
+                    <TableCell className="space-x-1">  {product.isExpires && <Badge variant="outline">Expires Soon</Badge>}</TableCell>
                     <TableCell className="text-right space-x-2">
                       <Button size="sm" variant="outline">Edit</Button>
                       <Button size="sm" variant="destructive">Delete</Button>
@@ -148,7 +206,7 @@ export default function ProductListPage() {
 
       {/* Card layout for small screens */}
       <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {!isLoading && data?.data?.map((product: any) => (
+        {!isLoading && filteredData?.map((product: any) => (
           <div key={product.id} className="border rounded-lg p-4 shadow-sm space-y-3">
             <ImageCard product={product}/>
             <div>
@@ -165,27 +223,6 @@ export default function ProductListPage() {
                 )}
                 {product.isExpires && <span className="ml-1 text-yellow-600">(Expires Soon)</span>}
               </p>
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button size="sm" variant="outline">Edit</Button>
-              <Button size="sm" variant="destructive">Delete</Button>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="sm" variant="secondary" onClick={() => setSelectedProduct(product)}>View</Button>
-                </DialogTrigger>
-                {selectedProduct?.id === product.id && (
-                  <DialogContent className="max-w-lg">
-                    <h2 className="text-lg font-semibold mb-2">{product.productName.product}</h2>
-                    <ImageCard product={product}/>
-                    <p><strong>Description:</strong> {product.productDescription}</p>
-                    <p><strong>Shop:</strong> {product.shopName.brandName}</p>
-                    <p><strong>Seller:</strong> {product.shopName.seller.firstName} {product.shopName.seller.lastName}</p>
-                    <p><strong>Market:</strong> {product.shopName.market.marketName}</p>
-                    <p><strong>Status:</strong> {product.isAvailable ? "Available" : "Unavailable"}</p>
-                    {product.isExpires && <p><strong>Expires Soon</strong></p>}
-                  </DialogContent>
-                )}
-              </Dialog>
             </div>
           </div>
         ))}

@@ -56,7 +56,7 @@ export const LoginForm = () => {
       login(data.user, data.tokens); // save to context
       toast.success("Login successful!");
       if (data.user.role !== "Buyer") {
-        router.push(`/${data.user.role}/dashboard`);
+        router.push(`/${data.user.role.toLowerCase()}/dashboard`);
       } else {
         router.push(`/`);
       }
@@ -83,7 +83,7 @@ export const LoginForm = () => {
   return (
     <CardWrapper
       headerLabel="Welcome back !! please login to access our services"
-      headerTitle=""
+      headerTitle="login Page"
       backButtonLabel="Don't have an account?"
       backButtonHref="/register"
     >

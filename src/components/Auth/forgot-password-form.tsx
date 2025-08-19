@@ -30,7 +30,7 @@ export const ForgotPasswordForm = () => {
     headerLabel="If you have a trouble to remember your password you can reset it here"
    headerTitle="Reset Password"
     backButtonLabel="I remembered my password"
-    backButtonHref="/Login"
+    backButtonHref="/login"
     
     >
         {/* <FormError message="Something went wrong !"/>
