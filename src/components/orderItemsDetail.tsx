@@ -33,7 +33,7 @@ export const OrderItemsDetails: React.FC<OrderDetailsProps> = ({
 
   return (
     <Dialog open={isOrderItemsDetailOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg mx-auto w-[95%]">
+      <DialogContent className="max-w-lg mx-auto w-[95%] max-h-2/3 overflow-auto">
         <DialogHeader>
           <DialogTitle>Order Details</DialogTitle>
           <DialogDescription asChild>
@@ -74,7 +74,7 @@ export const OrderItemsDetails: React.FC<OrderDetailsProps> = ({
 
               {/* Table */}
               {items.length > 0 && (
-                <div className="block overflow-x-auto rounded-lg shadow-sm border mb-8">
+                <div className="block overflow-x-auto rounded-lg shadow-sm border mb-8   ">
                   <Table>
                     <TableHeader>
                       <TableRow>

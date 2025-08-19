@@ -1,9 +1,12 @@
 import React from 'react'
 import Products from '@/components/products'
+import DefaultLayout from '@/components/defaultLayout'
 
 function page() {
   return (
-    <div className="bg-slate-50 dark:bg-gray-800 flex relative z-20 items-center justify-center mx-auto"><Products/></div>
+    <DefaultLayout>
+    <div className="bg-slate-50 dark:bg-gray-800 flex relative z-10 items-center justify-center mx-auto"><Products/></div>
+    </DefaultLayout>
   )
 }
 

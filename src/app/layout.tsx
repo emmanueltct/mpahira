@@ -39,7 +39,7 @@ export default function RootLayout({
           <ReactQueryProvider>
             <AuthProvider>
               
-              <NavBar />
+              {/* <NavBar /> */}
               <main className="min-h-screen mx-auto max-w-full">
                 {children}
               </main>

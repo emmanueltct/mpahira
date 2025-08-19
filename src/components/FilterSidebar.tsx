@@ -68,7 +68,7 @@ export const FilterSidebar = ({ filters, setFilters }: FilterProps) => {
 
   return (
     <Card className="w-full max-w-md p-4 space-y-6 rounded-2xl shadow-md
-      fixed md:sticky top-20 md:top-24
+      sticky top-1
       bg-white z-10"
     >
       <CardContent className="space-y-5">

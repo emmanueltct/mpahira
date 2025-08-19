@@ -83,7 +83,7 @@ export default function ClientCartListPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-20 sm:py-23">
+    <div className="container mx-auto px-4 py-40 sm:py-23">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-xl sm:text-2xl font-bold">Carts Total ({cartItems.length})</h1>
@@ -99,9 +99,27 @@ export default function ClientCartListPage() {
       <DeliveryLocationCard isModalOpen={isModalOpen} onClose={() => setIsModalOpen(false)} /> */}
 
       {/* Loading / Empty States */}
-      {isLoading && <div className="text-center py-10 text-gray-500">Loading carts...</div>}
+      {isLoading && 
+          <div className="block overflow-x-auto rounded-lg shadow-sm border mb-8">
+            <Table>
+              <TableBody>
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell colSpan={7}>
+                      <div className="h-10 w-full bg-gray-200 animate-pulse rounded"></div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          }
+      
+
+
+
       {!isLoading && cartItems.length === 0 && (
-        <div className="border rounded-lg p-8 shadow-sm space-y-3 w-1/2 mx-auto text-center">
+        <div className="border rounded-lg p-8 shadow-sm space-y-3 w-full mx-auto text-center">
           You haven't added any items to your cart yet. Start shopping by adding your first product!
         </div>
       )}
@@ -133,7 +151,7 @@ export default function ClientCartListPage() {
                         <TableHead>Price</TableHead>
                         <TableHead>Total</TableHead>
                         <TableHead>More</TableHead>
-                        <TableHead>Comments</TableHead>
+                        {/* <TableHead>Comments</TableHead> */}
                         <TableHead>Remove</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -164,17 +182,19 @@ export default function ClientCartListPage() {
                               }`}
                               onClick={() => handleChange(product.productId, "dec")}
                             />
-                            <input
-                              type="number"
-                              min={1}
-                              value={quantities[product.productId]}
-                              onChange={(e) => {
-                                const qty = Number(e.target.value);
-                                setQuantities((prev) => ({ ...prev, [product.productId]: qty }));
-                              }}
-                              onBlur={() => handleBlur(product.productId, quantities[product.productId], product.quantity)}
-                              className="p-2 w-20 border rounded text-center"
-                            />
+                              <input
+                                type="number"
+                                min={1}
+                                value={quantities[product.productId] ?? 1}
+                                onChange={(e) => {
+                                  const qty = Number(e.target.value);
+                                  setQuantities((prev) => ({ ...prev, [product.productId]: qty }));
+                                }}
+                                onBlur={() =>
+                                  handleBlur(product.productId, quantities[product.productId] ?? 1, product.quantity)
+                                }
+                                className="p-2 w-20 border rounded text-center"
+                              />
                             <FaPlus
                               size={30}
                               className="cursor-pointer p-2 rounded-2xl"
@@ -195,9 +215,9 @@ export default function ClientCartListPage() {
                               }}
                             />
                           </TableCell>
-                          <TableCell>
+                          {/* <TableCell>
                             <FaComment className="text-blue-500 cursor-pointer" size={18} />
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell>
                             <FaTrash
                               size={18}
@@ -231,12 +251,14 @@ export default function ClientCartListPage() {
                     </div>
 
                       <div className="flex justify-between mt-4">
+                      <Button  className="uppercase py-2 px-4 rounded-lg bg-pink-500 border-2 border-transparent text-white hover:bg-pink-400">
                         <Link
                           href="/buyer/payments"
-                          className="uppercase py-2 px-4 rounded-lg bg-pink-500 border-2 border-transparent text-white hover:bg-pink-400"
+                         
                         >
-                          Place Order
+                          checkout
                         </Link>
+                        </Button>
                         <Button className="uppercase py-2 px-4 rounded-lg bg-transparent border-2 border-pink-500 text-pink-500 hover:bg-pink-500 hover:text-white">
                           Cancel
                         </Button>
@@ -271,17 +293,19 @@ export default function ClientCartListPage() {
                                 >
                                   <FaMinus size={15} />
                                 </button>
-                                <input
-                                  type="number"
-                                  min={1}
-                                  value={quantities[product.productId]}
-                                  onChange={(e) => {
-                                    const qty = Number(e.target.value);
-                                    setQuantities((prev) => ({ ...prev, [product.productId]: qty }));
-                                  }}
-                                  onBlur={() => handleBlur(product.productId, quantities[product.productId], product.quantity)}
-                                  className="p-1 w-16 border rounded text-center"
-                                />
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    value={quantities[product.productId] ?? 1}
+                                    onChange={(e) => {
+                                      const qty = Number(e.target.value);
+                                      setQuantities((prev) => ({ ...prev, [product.productId]: qty }));
+                                    }}
+                                    onBlur={() =>
+                                      handleBlur(product.productId, quantities[product.productId] ?? 1, product.quantity)
+                                    }
+                                    className="p-1 w-16 border rounded text-center"
+                                  />
                                 <button
                                   className="p-1 rounded-full border-2 border-amber-600"
                                   onClick={() => handleChange(product.productId, "inc")}
@@ -342,12 +366,13 @@ export default function ClientCartListPage() {
                       </div>
 
                       <div className="flex justify-between mt-4">
+                        <Button variant="secondary" size="sm" className="uppercase py-1 px-4 rounded-lg bg-pink-500 border-2 border-transparent text-white hover:bg-pink-400">
                         <Link
                           href="/buyer/payments"
-                          className="uppercase py-2 px-4 rounded-lg bg-pink-500 border-2 border-transparent text-white hover:bg-pink-400"
                         >
-                          Place Order
+                          checkout
                         </Link>
+                        </Button>
                         <Button className="uppercase py-2 px-4 rounded-lg bg-transparent border-2 border-pink-500 text-pink-500 hover:bg-pink-500 hover:text-white">
                           Cancel
                         </Button>
@@ -392,7 +417,7 @@ export default function ClientCartListPage() {
                         No delivery location set yet. Click below to add one.
                       </p>
 
-                      <Button className="bg-amber-400 hover:bg-amber-500 text-white font-semibold px-4 py-2 rounded-lg shadow-md" >
+                      <Button onClick={() => setIsModalOpen(true)} className="bg-amber-400 hover:bg-amber-500 text-white font-semibold px-4 py-2 rounded-lg shadow-md" >
                         Set Location
                       </Button>
                     </div>

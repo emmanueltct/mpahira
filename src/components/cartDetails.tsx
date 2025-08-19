@@ -23,7 +23,7 @@ const CartDetails: React.FC<CartDetailsProps> = ({
   onClose
 }) => {
   const product = productData.ShopProduct;
-  console.log("99999999999999999999999999999999999999",product )
+
 
   return (
     <Dialog open={isCartProductDetailsModalOpen} onOpenChange={onClose}>
