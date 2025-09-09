@@ -1,7 +1,7 @@
 // hooks/useSubmitProduct.ts]import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
-import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import { useMutation,useQuery,useQueryClient } from "@tanstack/react-query";
+
 
 export const useCreateShopProduct = () => {
   return useMutation({
@@ -25,3 +25,46 @@ export const useCreateShopProduct = () => {
   });
 };
 
+// ------------------ DELETE ------------------
+export function useDeleteShopProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await axiosInstance.delete(`/shop-products/${id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shop-products"] });
+    },
+  })
+}
+
+// ------------------ UPDATE ------------------
+export function useUpdateShopProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      console.log("Update payload:", data);
+      const res = await axiosInstance.patch(`/shop-products/${id}`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shop-products"] });
+    },
+  });
+}
+
+// ⬇️ Fetch single product by ID
+export function useGetProductById(productId: string | null) {
+  return useQuery({
+    queryKey: ["product", productId],
+    queryFn: async () => {
+      if (!productId) return null;
+      const { data } = await axiosInstance.get(`/shop-products/${productId}`);
+      return data;
+    },
+    enabled: !!productId, // only fetch when id exists
+  });
+}

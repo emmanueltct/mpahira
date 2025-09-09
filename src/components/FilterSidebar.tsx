@@ -35,7 +35,6 @@ export const FilterSidebar = ({ filters, setFilters }: FilterProps) => {
   // Local state for controlled input
   const [localSearch, setLocalSearch] = useState(filters.searchTerm);
 
-  // Debounce search input update to filters (optional for better UX)
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       setFilters(prev => ({ ...prev, searchTerm: localSearch }));
@@ -44,7 +43,7 @@ export const FilterSidebar = ({ filters, setFilters }: FilterProps) => {
     return () => clearTimeout(delayDebounce);
   }, [localSearch, setFilters]);
 
-  // Fetch categories
+
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: async () => (await axiosInstance.get('/products')).data,

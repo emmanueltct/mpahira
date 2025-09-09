@@ -22,3 +22,16 @@ export const useProducts = (filters: {
     keepPreviousData: true,
   });
 };
+
+
+export const useSingleProduct = (id: string) => {
+  return useQuery({
+    queryKey: ["singleProduct", id],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get(`/shop-products/${id}`);
+      return data;
+    },
+    keepPreviousData: true,
+    enabled: !!id, // only run when id exists
+  });
+};

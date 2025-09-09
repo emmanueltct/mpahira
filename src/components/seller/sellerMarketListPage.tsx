@@ -1,57 +1,48 @@
 'use client';
 
 import React, { useState } from "react";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useQuery} from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { FaTrash, FaEdit } from "react-icons/fa";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import toast from "react-hot-toast";
 import LoadingSkeloton from "../loadingSkeloton";
-import UnitCategoryModal from "./addUnitProduct";
-import AddSubUnitProduct from "./addSubUnitProduct";
-import AllSubUnitProductDetails from "./subUnitsDetails";
 
-// ✅ Fetch all product-units
-const fetchCategoryList = async () => {
-  const { data } = await axiosInstance.get("/product-units");
+// ✅ Fetch all markets
+const fetchMarketList = async () => {
+  const { data } = await axiosInstance.get("/market");
   console.log("-----------------------------------",data)
   return data ?? []; // ensure array
 };
 
 
-
-export default function UnitProductListPage() {
-
+export default function SellerMarketListPage() {
+ 
 
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen,setIsModalOpen]=useState(false)
-  const [isSubUnitModalOpen,setIsSubUnitModalOpen]=useState(false)
-  const [isSubUnitDeltailModalOpen,setIsSubUnitDeltailModalOpen]=useState(false)
-  const [isUnitDescription,setIsUnitDescription]=useState("")
-  const [isSubUnits,setIsSubUnits]=useState([])
+ 
 
-  // ✅ Fetch product-units
+  // ✅ Fetch markets
   const {
-    data: productunits = [],
+    data: markets = [],
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["product-units"],
-    queryFn: fetchCategoryList,
+    queryKey: ["markets"],
+    queryFn:fetchMarketList,
   });
 
-  
 
-  if (isLoading) return <LoadingSkeloton/>
+  if (isLoading) return <div><LoadingSkeloton/></div>
            
 
-  if (error) toast.error("Error fetching product-units");
+  if (error) toast.error("Error fetching markets");
 
   // ✅ Pagination logic
-  const totalPages = productunits.length ? Math.ceil(productunits.length / itemsPerPage) : 1;
-  const paginatedproductunits = productunits.slice(
+  const totalPages = markets.length ? Math.ceil(markets.length / itemsPerPage) : 1;
+  const paginatedmarkets = markets.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -59,19 +50,13 @@ export default function UnitProductListPage() {
   return (
     <div className="container mx-auto px-4 py-10">
       <div className="w-full flex justify-between">
-        <h1 className="text-2xl font-bold mb-6">All product-units</h1>
-        <Button onClick={()=>setIsModalOpen(true)}>Add units</Button>
+        <h1 className="text-2xl font-bold mb-6">All markets</h1>
+        {/* <Button onClick={()=>setIsModalOpen(true)}>Add New Market</Button> */}
       </div>
-       <UnitCategoryModal
+       {/* <MarketModal
           isModalOpen={isModalOpen}
           onClose={() =>setIsModalOpen(false)}
-        />
-
-        <AddSubUnitProduct
-          isSubUnitModalOpen={isSubUnitModalOpen}
-          onCloseSubUnit={() =>setIsSubUnitModalOpen(false)}
-        />
-        <AllSubUnitProductDetails unit={isUnitDescription} subUnits={isSubUnits} isSubUnitDeltailModalOpen={isSubUnitDeltailModalOpen} onCloseSubUnitDetails={()=>setIsSubUnitDeltailModalOpen(false)}  />
+        /> */}
 
       {/* Filters */}
       <div className="flex items-center gap-4 mb-4">
@@ -98,38 +83,42 @@ export default function UnitProductListPage() {
           <TableHeader>
             <TableRow>
               <TableHead>#</TableHead>
-              <TableHead>Unit</TableHead>
-              <TableHead>Description</TableHead>
+              <TableHead>Profile</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Province</TableHead>
+              <TableHead>District</TableHead>
+              <TableHead>Sector</TableHead>
+              <TableHead>Longitude Coordinate</TableHead>
+              <TableHead>Latitude Coordinate</TableHead>
+              <TableHead>Google Map Coordinate</TableHead>
+              <TableHead>classification</TableHead>
               <TableHead>Created At</TableHead>
-              <TableHead>Sub units</TableHead>
-               <TableHead>Add Sub units</TableHead>
-              <TableHead>Actions</TableHead>
+              {/* <TableHead>Actions</TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedproductunits.map((cat: any, i: number) => (
+            {paginatedmarkets.map((cat: any, i: number) => (
               <TableRow key={cat.id}>
                 <TableCell>{i + 1 + (currentPage - 1) * itemsPerPage}</TableCell>
-                <TableCell>{cat.unitProduct}</TableCell>
-                <TableCell>{cat.unitProductDescription}</TableCell>
+                <TableCell>
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage
+                        src={cat.marketThumbnail}
+                        alt={cat.marketName}
+                        />
+                        <AvatarFallback>PR</AvatarFallback>
+                     </Avatar>
+                </TableCell>
+                <TableCell>{cat.marketName}</TableCell>
+                <TableCell>{cat.province}</TableCell>
+                <TableCell>{cat.district}</TableCell>
+                <TableCell>{cat.sector}</TableCell>
+                <TableCell>{cat.locationLongitude}</TableCell>
+                <TableCell>{cat.locationLatitude}</TableCell>
+                <TableCell>{cat.googleMapCoordinate}</TableCell>
+                <TableCell>{cat.classification}</TableCell>
                 <TableCell>{new Date(cat.createdAt).toLocaleDateString()}</TableCell>
-                 <TableCell>
-                  
-                  <Button onClick={()=>{setIsSubUnitDeltailModalOpen(true);setIsUnitDescription(cat.unitProductDescription);setIsSubUnits(cat.subUnits)}}>Sub units ({cat.subUnits.length})</Button></TableCell>
-                  <TableCell><Button onClick={()=>setIsSubUnitModalOpen(true)}>Add Sub units</Button></TableCell>
-                <TableCell>
-                  <Button>
-                    <FaEdit/>
-                  </Button>
-                </TableCell>
-                <TableCell>
-                  <Button
-                    size="sm"
-                    onClick={() => toast(`Update category ${cat.id}`)}
-                  >
-                    <FaTrash/>
-                  </Button>
-                </TableCell>
+                
               </TableRow>
             ))}
           </TableBody>

@@ -40,7 +40,13 @@ function GoogleCallbackContent() {
           if(res.data.user.role.role==="Buyer"){
             router.push(`/products`);
           }else{
-            router.push(`/${res.data.user.role.role}/dashboard`);
+            if(res.data?.user?.role?.role){
+              const role=res.data?.user?.role?.role;
+              router.push(`/${role.toLowerCase()}/dashboard`);
+            }else{
+               router.push(`/`);
+            }
+            
           }
           
         } catch (error) {

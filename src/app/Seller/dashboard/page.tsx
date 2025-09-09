@@ -1,6 +1,6 @@
 import React from "react";
 import { SellerCard } from "@/components/SellerCard";
-import { Sidebar } from "@/components/DashboardSidebar";
+
 import { useSellerStats } from "@/hooks/useSellerStats";
 import { RecentActivity } from "@/components/RecentActivity";
 import { useRecentActivity } from "@/hooks/useRecentActivity";

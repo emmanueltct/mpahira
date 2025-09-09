@@ -6,7 +6,7 @@ import axiosInstance from '@/lib/axios';
 import { useRouter } from "next/navigation"; // If using Next.js 13+
 
 
-export const useCart = () => {
+export const useCart = (options?: { enabled?: boolean }) => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -20,11 +20,11 @@ const cartQuery = useQuery({
     console.log("===============================================================",res.data.carts)
     return res.data.carts;
   },
-  enabled: false, // disable auto fetch on mount
+  enabled:options?.enabled, // disable auto fetch on mount
 });
 
 // When you want to fetch:
-cartQuery.refetch();
+// cartQuery.refetch();
 
 
 
@@ -38,12 +38,11 @@ cartQuery.refetch();
   onSuccess: (data) => {
      queryClient.invalidateQueries({ queryKey: ['cart'] });
     if (data.message) {
-   
       toast.success(data.message)
-    
     }
   },
   onError: (error: any) => {
+    //console.log("00000000000000000000000000000000000000000",error)
     if (axios.isAxiosError(error)) {
       const message = error.response?.data?.message;
       if (message) {

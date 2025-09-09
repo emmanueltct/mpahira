@@ -1,18 +1,23 @@
 "use client";
 
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, ReactNode } from "react";
 import Cookies from "js-cookie";
-import axiosInstance from "@/lib/axios";
+import { useRouter } from "next/navigation";
 
-type User = {
+type Role = "buyer" | "admin" | "seller" | "agent" | string;
+
+export type User = {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: "buyer" | "admin" | "seller"|"agent";
+  role: {
+    id: string;
+    role: Role;
+  };
 };
 
-type Tokens = {
+export type Tokens = {
   accessToken: string;
   refreshToken: string;
 };
@@ -20,18 +25,21 @@ type Tokens = {
 export type AuthContextType = {
   user: User | null;
   tokens: Tokens | null;
-  login: (userData: User, tokens: Tokens) => void;
+  login: (userData: User, tokensData: Tokens) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  loading: boolean; // NEW
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [tokens, setTokens] = useState<Tokens | null>(null);
+  const [loading, setLoading] = useState(true); // track initial loading
 
-  // Load from storage on mount
+  // Load user & tokens from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     const storedTokens = localStorage.getItem("tokens");
@@ -39,17 +47,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (storedUser) setUser(JSON.parse(storedUser));
     if (storedTokens) setTokens(JSON.parse(storedTokens));
 
-    // 👇 listen for forced logout from axios interceptors
-    const handleLogoutEvent = () => {
-      setUser(null);
-      setTokens(null);
-      Cookies.remove("user");
-    };
+    setLoading(false); // done loading
+
+    // Listen for forced logout
+    const handleLogoutEvent = () => logout();
     window.addEventListener("logout", handleLogoutEvent);
 
-    return () => {
-      window.removeEventListener("logout", handleLogoutEvent);
-    };
+    return () => window.removeEventListener("logout", handleLogoutEvent);
   }, []);
 
   const login = (userData: User, tokensData: Tokens) => {
@@ -59,8 +63,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("tokens", JSON.stringify(tokensData));
 
-    // 👇 sync user to cookie for middleware
-    Cookies.set("user", JSON.stringify(userData));
+    // Store minimal info in cookie for middleware
+    Cookies.set("user", JSON.stringify({ id: userData.id, role: userData.role }));
+
+    // Redirect after login
+    if (userData.role.role !== "buyer") {
+      router.push(`/${userData.role.role.toLowerCase()}/dashboard`);
+    } else {
+      router.push("/");
+    }
   };
 
   const logout = () => {
@@ -69,8 +80,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     localStorage.removeItem("user");
     localStorage.removeItem("tokens");
-
     Cookies.remove("user");
+
+    router.push("/login"); // redirect after logout
   };
 
   return (
@@ -81,6 +93,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         login,
         logout,
         isAuthenticated: !!tokens,
+        loading,
       }}
     >
       {children}

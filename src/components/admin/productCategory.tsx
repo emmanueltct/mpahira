@@ -101,6 +101,7 @@ export default function ProductCategoryListPage() {
             <TableRow>
               <TableHead>#</TableHead>
               <TableHead>Category</TableHead>
+              <TableHead>Kinyarwanda</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -110,6 +111,7 @@ export default function ProductCategoryListPage() {
               <TableRow key={cat.id}>
                 <TableCell>{i + 1 + (currentPage - 1) * itemsPerPage}</TableCell>
                 <TableCell>{cat.product}</TableCell>
+                <TableCell>{cat.productKinyLabel}</TableCell>
                 <TableCell>{new Date(cat.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>
                   <Button>

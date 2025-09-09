@@ -1,6 +1,8 @@
 import React from 'react'
 import { Plus } from 'lucide-react';
 import Image from 'next/image'
+import { Button } from './ui/button';
+import Link from 'next/link';
 
 interface MarketCardProps {
   title: string;
@@ -42,6 +44,7 @@ const MarketCard: React.FC<MarketCardProps> = ({ title, image }) => {
         
         <div className='flex'>
          <div className="w-6 h-6 bg-white bg-opacity-90 rounded-full flex items-center justify-center mr-3">
+            
             <Plus className="w-4 h-4 text-black" />
           </div>
             <h3 className="text-white text-xl font-bold drop-shadow-md mb-3">{title}</h3>
@@ -51,6 +54,10 @@ const MarketCard: React.FC<MarketCardProps> = ({ title, image }) => {
           <p>
             This is a short description that slides up to overlay the image on hover. This is a short description that slides up to overlay the image on hover.This is a short description that slides up to overlay the image on hover.
          </p>
+           <Button variant="default"  size="sm" className="mt-4 items-end justify-end">
+              {/* <Link href=`/products?market=${}`></Link> */}
+              Test bute
+            </Button>
         </div>
       </div>
     </div>
