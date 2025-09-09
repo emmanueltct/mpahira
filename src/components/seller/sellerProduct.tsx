@@ -26,6 +26,8 @@ import { useProductsCategory } from "@/hooks/useProductsCategories";
 import { useMarkets } from "@/hooks/useMarket";
 import ImageCard from "../ImageCard";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import Link from "next/link";
+import ProductPricingModal from "./productPricing";
 
 
 const ProductsPage = () => {
@@ -36,7 +38,9 @@ const ProductsPage = () => {
   const [market, setMarket] = useState("all");
   const [availability, setAvailability] = useState("all");
   const [expires, setExpires] = useState("all");
-  
+  const [productId,setProductId]=useState("")
+  const [isOpen,setIsOpen]=useState(false);
+  const [subUnits, setsubUnits]=useState([])
 
   const { data: categories } = useProductsCategory();
   const { data: markets } = useMarkets();
@@ -55,8 +59,11 @@ const ProductsPage = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Products</h1>
-
+     
+        <div className="w-full flex justify-between">
+                <h1 className="text-2xl font-bold mb-6">Products</h1>
+                <Button><Link  href="/seller/products/Add">Add product</Link></Button>
+          </div>
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="flex flex-col">
@@ -132,6 +139,7 @@ const ProductsPage = () => {
         </div>
       </div>
 
+      <ProductPricingModal  productId={productId}  isOpen={isOpen} onClose={()=>setIsOpen(false)} productUnities={subUnits} />
       {/* Table */}
       {isLoading ? (
         <p>Loading...</p>
@@ -181,8 +189,23 @@ const ProductsPage = () => {
                 </TableCell>
                 <TableCell className="space-x-1"> {product.isExpires && <Badge variant="secondary">Expires Soon</Badge>}</TableCell>
                 <TableCell className="text-right space-x-2">
-                  <Button size="sm" variant="outline">Edit</Button>
+                  <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {setIsOpen(true);setProductId(product.id);setsubUnits(product.productUnities)}}
+                      >
+                       Unit Prices
+                  </Button>
+                  <Button size="sm" variant="outline">
+                     <Link
+                      href={`/seller/products/${product.id}/edit`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      Edit
+                    </Link>
+                  </Button>
                   <Button size="sm" variant="destructive">Delete</Button>
+
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button

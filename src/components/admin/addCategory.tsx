@@ -28,18 +28,19 @@ const ProductCategoryModal: React.FC<ProductCategoryModalProps> = ({
 
   const [formData, setFormData] = useState({
     product: "",
+    productKinyLabel:""
   });
 
   // ✅ mutation for adding category
   const { mutate, isPending } = useMutation({
-    mutationFn: async (payload: { product: string }) => {
+    mutationFn: async (payload: { product: string,productKinyLabel:string }) => {
       const { data } = await axiosInstance.post("/products", payload);
       return data;
     },
     onSuccess: () => {
       toast.success("Category created successfully!");
       queryClient.invalidateQueries({ queryKey: ["categories"] });
-      setFormData({ product: "" });
+      setFormData({ product: "" ,productKinyLabel:""});
       onClose();
     },
     onError: (error: any) => {
@@ -82,6 +83,15 @@ const ProductCategoryModal: React.FC<ProductCategoryModalProps> = ({
             name="product" // ✅ matches formData key
             placeholder="Enter category name"
             value={formData.product}
+            onChange={handleChange}
+            className="w-full"
+          />
+
+          <Input
+            type="text"
+            name="productKinyLabel" // ✅ matches formData key
+            placeholder="Enter category name in Kinyarwanda"
+            value={formData.productKinyLabel}
             onChange={handleChange}
             className="w-full"
           />

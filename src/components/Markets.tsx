@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import MarketCard from './MarketCard';
+import { useMarkets } from '@/hooks/useMarket';
+import LoadingSkeloton from './loadingSkeloton';
 
 export default function Markets() {
   const [isMobile, setIsMobile] = useState(false);
@@ -16,9 +18,11 @@ export default function Markets() {
     return () => window.removeEventListener('resize', checkIfMobile);
   }, []);
 
+  const { data, isLoading } = useMarkets();
+
   return (
     <section className="bg-white dark:bg-gray-800 w-full container m-auto">
-      <div className=" mx-auto  px-4 sm:px-6 lg:px-12 flex flex-col items-center">
+      <div className="mx-auto px-4 sm:px-6 lg:px-12 flex flex-col items-center">
         {/* Heading */}
         <div className="mb-4 w-full flex flex-col items-center py-4">
           <h2 className="font-heading mb-4 font-bold tracking-tight text-gray-900 dark:text-white text-xl sm:text-3xl md:text-4xl lg:text-5xl capitalize text-left sm:text-center w-full">
@@ -32,27 +36,31 @@ export default function Markets() {
 
         {/* Scrollable Grid only on mobile */}
         <div
-          className={`
-            w-full  
-            ${isMobile ? 'h-[70vh] overflow-y-auto' : 'h-auto overflow-visible'}
-          `}
+          className={`w-full ${isMobile ? "h-[70vh] overflow-y-auto" : "h-auto overflow-visible"}`}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-10">
-            <MarketCard title="Nyabugogo" image="/images/market1.jpg" />
-            <MarketCard title="Gisozi Market" image="/images/market2.jpg" />
-            <MarketCard title="ZINIYA Market" image="/images/haha.jpg" />
-            <MarketCard title="Nyabugogo" image="/images/market3.jpg" />
-            <MarketCard title="Mulindi Market" image="/images/basket.jpg" />
-            <MarketCard title="Kimironko Market" image="/images/market2.jpg" />
-            <MarketCard title="Nyabugogo" image="/images/haha.jpg" />
-            <MarketCard title="Nyabugogo" image="/images/market3.jpg" />
-            <MarketCard title="Nyabugogo" image="/images/haha.jpg" />
-            <MarketCard title="Nyabugogo" image="/images/market2.jpg" />
-            <MarketCard title="Nyabugogo" image="/images/market3.jpg" />
-            <MarketCard title="Nyabugogo" image="/images/basket.jpg" />
-          </div>
+          {isLoading ? (
+            <LoadingSkeloton />
+          ) : data && data.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-10 justify-center">
+              {data.map((cat: any, i: number) => (
+                <MarketCard
+                  key={i}
+                  title={cat.marketName}
+                  image={cat.marketThumbnail}
+                  otherData={cat}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex w-full justify-center items-center py-10">
+              <h1 className="text-gray-500 text-center">
+                We are yet to connect with different markets in Kigali
+              </h1>
+            </div>
+          )}
         </div>
-      </div>
+        </div>
+      
     </section>
   );
 }

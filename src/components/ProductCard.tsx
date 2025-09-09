@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import {useRouter} from "next/navigation"
 import {
   Card,
   CardMedia,
@@ -9,6 +10,7 @@ import {
   Tooltip,
   Rating,
   Stack,
+  Button,
 } from '@mui/material';
 
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -16,15 +18,21 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 
+// import { useCart } from '@/hooks/userCarts';
+import { Bold } from 'lucide-react';
+import { AuthContext } from '@/context/auth-context';
 import { useCart } from '@/hooks/userCarts';
 
 type Product = {
   id: string;
   productId:string,
   productName: { product: string,id:string };
-  price: number;
-  discountPrice?: number;
+  marketUnitPrice: number;
+  productDiscount ?: number;
   productProfile: string;
+  productUnit:string,
+  unitProduct:{id:string, unitProduct:string}
+  engLabel:string;
   marketName: string;
   rating?: number;
 };
@@ -35,19 +43,33 @@ type ProductCardProps = {
 };
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => {
+  const router=useRouter()
   const [userRating, setUserRating] = useState<number>(product.rating ?? 0);
-  const { addToCart } = useCart();
+ 
+ const [selectedUnit, setSelectedUnit] = useState(null);
 
-  const hasDiscount =
-    typeof product.discountPrice === 'number' &&
-    product.discountPrice > 0 &&
-    product.discountPrice < product.price;
+  const {user,isAuthenticated } = useContext(AuthContext)!;
+  const isBuyer = String(user?.role.role || "").toLowerCase() === "buyer";
+
+   const { addToCart } = useCart({
+      enabled: isBuyer && isAuthenticated,
+    });
+  
+
+  const handleSelect = (item) => {
+    setSelectedUnit(item);
+    console.log("Selected:", item);
+  };
+ 
+  const hasDiscount = Number(product.productDiscount)  > 0 &&
+    Number(product.productDiscount)  < Number(product.marketUnitPrice);
 
   const discountPercent = hasDiscount
-    ? Math.round(((product.price - (product.discountPrice ?? 0)) / product.price) * 100)
+    ? Math.round(((product.marketUnitPrice - (product.productDiscount  ?? 0)) / product.marketUnitPrice) * 100)
     : 0;
 
-  console.log("::::::::::::::::::::::::::::::::::::::::::::::::::::::::",product)
+    console.log("product========================",product)
+
     const handleCartItem = ({
         productId,
         Unit,
@@ -61,15 +83,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
           items: {
             productId,
             quantity: 1,
-            unit: Unit,
-            unitPrice: unitPrice,
-            totalPrice: unitPrice,
+            unit:product.productUnit,
+            unitPrice:Number(product.marketUnitPrice),
+            totalPrice:Number(product.marketUnitPrice),
           },
-          totalAmount: unitPrice,
+          totalAmount:Number(product.marketUnitPrice),
         };
 
         addToCart.mutate(item);
       };
+
+      const  handleProductDetail=(id:string)=>{
+        router.push(`/products/${id}`)
+      }
 
   return (
     <Card
@@ -148,7 +174,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
         }}
       >
         <Typography variant="h6" noWrap title={product.productName.product} fontWeight={700} fontSize={18}>
-          {product.productName.product}
+          {product.productName.product} ~ {product.engLabel}
         </Typography>
         <Typography
           variant="subtitle2"
@@ -157,7 +183,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
           title={product.shopName.market.marketName}
           fontStyle="italic"
         >
-          {product.shopName.market.marketName} - {product.shopName.brandName}
+          {product.shopName.market.marketName} 
         </Typography>
 
         <Box sx={{ display: 'flex', justifyContent: layout === 'list' ? 'flex-start' : 'center', alignItems: 'center', mt: 0.5 }}>
@@ -176,22 +202,53 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: layout === 'list' ? 'flex-start' : 'center', gap: 1, alignItems: 'center', mt: 0.5 }}>
-          {!hasDiscount ? (
-            <>
-              <Typography variant="h6" color="error" fontWeight="bold">
-                {(product.discountPrice ?? 1000)} RWF
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                {product.price || 2000}  RWF
-              </Typography>
-            </>
-          ) : (
-            <Typography variant="h6" fontWeight="bold">
-              {product.price || 2000} RWF
+       <Box
+        sx={{
+          display: "flex",
+          justifyContent: layout === "list" ? "flex-start" : "center",
+          gap: 1,
+          alignItems: "center",
+          mt: 0.5,
+        }}
+      >
+        {hasDiscount ? (
+          <>
+         
+            <Typography variant="h6" color="error" fontWeight="bold">
+              {(product.productDiscount ?? product.marketUnitPrice) || 0} RWF /{" "}
+              {product.unitProduct?.unitProduct}
             </Typography>
-          )}
-        </Box>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ textDecoration: "line-through" }}
+            >
+              {product.marketUnitPrice || product.productDiscount} RWF /{" "}
+              {product.unitProduct?.unitProduct}
+            </Typography>
+          </>
+        ) : product.productUnities?.length >1 ? (
+         
+        <Typography
+          variant="subtitle2"
+          color="text.primary"
+          noWrap
+          title={"Available in different Option"}
+          fontStyle="italic"
+          fontWeight="bold"
+        >
+          {"Available in different Option"} 
+        </Typography>
+
+        ) : (
+          product.productUnities?.map((item, index) => (
+            <Typography key={index} variant="h6" fontWeight="bold">
+              {item.unitPrice || 0} RWF / {item.subUnit?.subUnit}
+            </Typography>
+          ))
+        )}
+      </Box>
+
 
         <Stack direction="row" spacing={2} justifyContent={layout === 'list' ? 'flex-start' : 'center'} sx={{ mt:1 }}>
           <Tooltip title="Add to wishlist">
@@ -199,22 +256,35 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
               <FavoriteBorderIcon />
             </IconButton>
           </Tooltip>
-
-          <Tooltip title="Add to cart">
+           { product.productUnities?.length >1 ? (
+            <>
+              <Tooltip title="Available in different option please select" >
+                <Button variant="contained" size="small" onClick={()=>{
+                handleProductDetail(product.id)
+              }}  >Select</Button>
+              </Tooltip>
+            </>
+            
+           ):(
+           <>
+            <Tooltip title="Add to cart">
             <IconButton size="small" color="primary">
               <ShoppingCartOutlinedIcon onClick={()=>handleCartItem({ 
                   productId: product.id, 
-                  Unit: "kg", 
-                  unitPrice: 2000 
+                  Unit:product.productUnities[0]?.subUnit.subUnit, 
+                  unitPrice: product.productUnities[0]?.unitPrice 
                 })} />
             </IconButton>
           </Tooltip>
-
           <Tooltip title="View details">
             <IconButton size="small" color="info">
-              <VisibilityOutlinedIcon />
+              <VisibilityOutlinedIcon onClick={()=>{
+                handleProductDetail(product.id)
+              }} />
             </IconButton>
           </Tooltip>
+           </>
+           )}
 
           {/* <Tooltip title="Like">
             <IconButton size="small" color="success">

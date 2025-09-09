@@ -68,7 +68,7 @@ export default function Layout({ children }) {
         { name: "Wishlist", initials: "W" , href:"/seller/orders" },
       ]);
       setNavigation([
-      { name: "Dashboard", icon:LayoutDashboard , href:"/seller/dasboard" },
+      { name: "Dashboard", icon:LayoutDashboard , href:"/seller/dashboard" },
       { name: "Markets", icon:HouseIcon, href:"/seller/markets" },
       { name: "shops", icon:StoreIcon, href:"/seller/shops" },
       { name: "category", icon:ChartBarDecreasingIcon, href:"/seller/categories" },

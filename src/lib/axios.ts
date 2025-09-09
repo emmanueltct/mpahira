@@ -83,15 +83,15 @@ axiosInstance.interceptors.response.use(
 // ✅ Centralized logout handler (prevents infinite loops)
 function handleLogout() {
   if (typeof window !== "undefined") {
-    const isOnLoginPage = window.location.pathname === "/login";
+   // const isOnLoginPage = window.location.pathname === "/login";
 
     localStorage.removeItem("tokens");
     window.dispatchEvent(new Event("logout"));
 
-    if (!isOnLoginPage) {
-      // redirect only if not already on login
-      window.location.href = "/login";
-    }
+    // if (!isOnLoginPage) {
+    //   // redirect only if not already on login
+    //   window.location.href = "/login";
+    // }
   }
 }
 

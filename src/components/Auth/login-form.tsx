@@ -53,15 +53,13 @@ export const LoginForm = () => {
       return res.data;
     },
     onSuccess: (data) => {
+      console.log(data.tokens)
       login(data.user, data.tokens); // save to context
       toast.success("Login successful!");
-      if (data.user.role !== "Buyer") {
-        router.push(`/${data.user.role.toLowerCase()}/dashboard`);
-      } else {
-        router.push(`/`);
-      }
+     
     },
     onError: (error: any) => {
+      console.log("++++++++++++++++++++++++++++++++++",error)
       toast.error(error?.response?.data?.message || "Login failed");
     },
   });
