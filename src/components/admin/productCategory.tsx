@@ -9,13 +9,11 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import LoadingSkeloton from "../loadingSkeloton";
 import ProductCategoryModal from "./addCategory";
+import { fetchCategoryList } from "@/hooks/useProducts";
+import AddsubCategoryProduct from "./productSubCategory";
 
 // ✅ Fetch all categories
-const fetchCategoryList = async () => {
-  const { data } = await axiosInstance.get("/products");
-  console.log("-----------------------------------",data)
-  return data ?? []; // ensure array
-};
+
 
 // ✅ Create a new category (mutation)
 const createProductCategory = async (payload: any) => {
@@ -29,6 +27,9 @@ export default function ProductCategoryListPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen,setIsModalOpen]=useState(false)
+  const [productCategory,setProductCategory]=useState([])
+   const [selectedProductCategory,setSelectedProductCategory]=useState([])
+  const [isSubCategoryModalOpen,setIsSubUnitDeltailModalOpen]=useState(false)
 
   // ✅ Fetch categories
   const {
@@ -74,7 +75,11 @@ export default function ProductCategoryListPage() {
           isModalOpen={isModalOpen}
           onClose={() =>setIsModalOpen(false)}
         />
-
+      <AddsubCategoryProduct 
+        productCategory={productCategory} 
+        selectedProductCategory={selectedProductCategory}
+        isSubCategoryModalOpen={isSubCategoryModalOpen} 
+        onClosesubCategory={()=>setIsSubUnitDeltailModalOpen(false)}  />
       {/* Filters */}
       <div className="flex items-center gap-4 mb-4">
         <span>Items per page:</span>
@@ -103,6 +108,7 @@ export default function ProductCategoryListPage() {
               <TableHead>Category</TableHead>
               <TableHead>Kinyarwanda</TableHead>
               <TableHead>Created At</TableHead>
+              <TableHead>Sub Category</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -113,6 +119,11 @@ export default function ProductCategoryListPage() {
                 <TableCell>{cat.product}</TableCell>
                 <TableCell>{cat.productKinyLabel}</TableCell>
                 <TableCell>{new Date(cat.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  <Button onClick={()=> {setSelectedProductCategory(cat);setProductCategory(paginatedCategories);setIsSubUnitDeltailModalOpen(true)}}>
+                    Sub Categories ( {cat.productSubCategory?.length}  )
+                  </Button>
+                </TableCell>
                 <TableCell>
                   <Button>
                     <FaEdit/>

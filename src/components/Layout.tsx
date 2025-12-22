@@ -53,6 +53,8 @@ export default function Layout({ children }) {
       { name: "Dashboard", icon:LayoutDashboard , href:"/admin/dasboard" },
       { name: "Role", icon:ActivityIcon, href:"/admin/roles" },
       { name: "Users", icon:User2Icon, href:"/admin/users" },
+      { name: "Agents", icon:User2Icon, href:"/admin/agents" },
+
       { name: "Markets", icon:HouseIcon, href:"/admin/markets" },
       { name: "shops", icon:StoreIcon, href:"/admin/shops" },
       { name: "product-units", icon:ChartBarDecreasingIcon, href:"/admin/unit-products" },

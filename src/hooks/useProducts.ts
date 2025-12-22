@@ -35,3 +35,9 @@ export const useSingleProduct = (id: string) => {
     enabled: !!id, // only run when id exists
   });
 };
+
+export const fetchCategoryList = async () => {
+  const { data } = await axiosInstance.get("/products");
+  console.log("-----------------------------------",data)
+  return data ?? []; // ensure array
+};

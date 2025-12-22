@@ -289,7 +289,7 @@ export default function SingleProductPage() {
                   </div>
                   <p className="text-sm text-gray-500">
                       {unitPrice > 0 ? quantity * unitPrice : inputValue} RWF /{" "}
-                      {quantity} {unit}
+                      {quantity}  packages of {unit}
                   </p>
                   </>
                 )}

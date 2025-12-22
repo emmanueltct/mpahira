@@ -4,7 +4,8 @@
 import React from "react";
 
 import Layout from "@/components/Layout";
-import MarketListPage from "@/components/admin/marketList";
+
+import OrderListPage from "@/components/admin/adminOrderList";
 
 
 
@@ -12,8 +13,8 @@ export default function Page() {
       
   return(
   <Layout>
-    <div className="flex  justify-center h-fit">
-        <MarketListPage/>
+    <div className="flex items-center justify-center h-fit">
+        <OrderListPage/>
     </div>
    </Layout>
    )}

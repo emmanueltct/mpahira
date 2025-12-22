@@ -17,15 +17,24 @@ export type User = {
   };
 };
 
+
+export type UserData= {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role:string
+};
+
 export type Tokens = {
   accessToken: string;
   refreshToken: string;
 };
 
 export type AuthContextType = {
-  user: User | null;
+  user: UserData | null;
   tokens: Tokens | null;
-  login: (userData: User, tokensData: Tokens) => void;
+  login: (userData: UserData, tokensData: Tokens) => void;
   logout: () => void;
   isAuthenticated: boolean;
   loading: boolean; // NEW
@@ -35,7 +44,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
   const [tokens, setTokens] = useState<Tokens | null>(null);
   const [loading, setLoading] = useState(true); // track initial loading
 
@@ -56,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener("logout", handleLogoutEvent);
   }, []);
 
-  const login = (userData: User, tokensData: Tokens) => {
+  const login = (userData:UserData, tokensData: Tokens) => {
     setUser(userData);
     setTokens(tokensData);
 
@@ -67,8 +76,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     Cookies.set("user", JSON.stringify({ id: userData.id, role: userData.role }));
 
     // Redirect after login
-    if (userData.role.role !== "buyer") {
-      router.push(`/${userData.role.role.toLowerCase()}/dashboard`);
+    if (userData.role !== "buyer") {
+      router.push(`/${userData.role.toLowerCase()}/dashboard`);
     } else {
       router.push("/");
     }
