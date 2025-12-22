@@ -18,8 +18,7 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 
-// import { useCart } from '@/hooks/userCarts';
-import { Bold } from 'lucide-react';
+
 import { AuthContext } from '@/context/auth-context';
 import { useCart } from '@/hooks/userCarts';
 
@@ -39,10 +38,10 @@ type Product = {
 
 type ProductCardProps = {
   product: Product;
-  layout: 'grid' | 'list';
+  category: string;
 };
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => {
+export const ProductCardHomePage: React.FC<ProductCardProps> = ({ product, category }) => {
   const router=useRouter()
   const [userRating, setUserRating] = useState<number>(product.rating ?? 0);
  
@@ -68,7 +67,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
     ? Math.round(((product.marketUnitPrice - (product.productDiscount  ?? 0)) / product.marketUnitPrice) * 100)
     : 0;
 
-    console.log("product========================",product)
 
     const handleCartItem = ({
         productId,
@@ -79,7 +77,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
         Unit: string | null;
         unitPrice: number;
       }) => {
-          const item = {
+         
+        const item = {
           items: {
             productId,
             quantity: 1,
@@ -100,11 +99,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
   return (
     <Card
       sx={{
-        display: layout === 'list' ? 'flex' : 'block',
+        display: 'block',
         p:1,
         borderRadius: 3,
         boxShadow:0,
-        maxWidth: layout === 'grid' ? 300 : '95%',
         cursor: 'pointer',
         position: 'relative',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -119,10 +117,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
         <CardMedia
           component="img"
           image={product.productProfile}
-          alt={product.productName.product}
+          alt={product.engLabel}
           sx={{
-            width: layout === 'list' ? 160 : '100%',
-            height: layout === 'list' ? 140 : 170,
+        
             objectFit: 'cover',
             transition: 'transform 0.3s ease',
             '&:hover': {
@@ -162,19 +159,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
 
       <CardContent
         sx={{
-          ml: layout === 'list' ? 3 : 0,
-          mt: layout === 'list' ? 0 : 1,
+        
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          textAlign: layout === 'list' ? 'left' : 'center',
+          textAlign: 'center',
           gap: 0.2,
           px: 0,
-          py:0.5,
+          py:0.5
         }}
       >
-        <Typography variant="h6" noWrap title={product.productName.product} fontWeight={700} fontSize={18}>
-          {product.productName.product} ~ {product.engLabel}
+        <Typography variant="h6" noWrap title={category} fontWeight={700} fontSize={14}>
+          {category} ~ {product.engLabel}
         </Typography>
         <Typography
           variant="subtitle2"
@@ -186,7 +182,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
           {product.shopName.market.marketName} 
         </Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: layout === 'list' ? 'flex-start' : 'center', alignItems: 'center', mt: 0.5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 0.5 }}>
           <Rating
             name={`rating-${product.id}`}
             value={userRating}
@@ -205,7 +201,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
        <Box
         sx={{
           display: "flex",
-          justifyContent: layout === "list" ? "flex-start" : "center",
+          justifyContent:  "center",
           gap: 1,
           alignItems: "center",
           mt: 0.5,
@@ -236,13 +232,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
           title={"Available in different Option"}
           fontStyle="italic"
           fontWeight="bold"
+          fontSize={12}
         >
           {"Available in different Option"} 
         </Typography>
 
         ) : (
           product.productUnities?.map((item, index) => (
-            <Typography key={index} variant="h6" fontWeight="bold">
+            <Typography key={index} variant="h6" fontWeight="bold" fontSize={12}>
               {item.unitPrice || 0} RWF / {item.subUnit?.subUnit}
             </Typography>
           ))
@@ -250,7 +247,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
       </Box>
 
 
-        <Stack direction="row" spacing={2} justifyContent={layout === 'list' ? 'flex-start' : 'center'} sx={{ mt:1 }}>
+        <Stack direction="row" spacing={2} justifyContent={ 'center'} sx={{ mt:1 }}>
           <Tooltip title="Add to wishlist">
             <IconButton size="small" color="error">
               <FavoriteBorderIcon />

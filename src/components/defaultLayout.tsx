@@ -9,6 +9,7 @@ import { useCart } from "@/hooks/userCarts";
 import { FaHeart, FaShoppingCart, FaBell, FaChevronDown } from "react-icons/fa";
 import { X } from "lucide-react";
 import { AuthContext } from "@/context/auth-context";
+import DropdownMenu from "./dropdown";
 
 const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +21,7 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
 
  const { user, logout, loading, isAuthenticated } = useContext(AuthContext)!;
   
-  const isBuyer = String(user?.role.role || "").toLowerCase() === "buyer";
+  const isBuyer = String(user?.role || "").toLowerCase() === "buyer";
 
   // ✅ Fetch cart only if user is authenticated
   const { cartQuery } = useCart({
@@ -98,7 +99,9 @@ if (loading) return null;
               className={`${isOpen ? 'block bg-white shadow-2xl h-screen sm:h-12 translate-x-0 transition-transform duration-400 ease-in-out' : '-translate-x-full sm:-translate-x-0'} absolute top-full left-0 w-1/2 sm:w-full sm:bg-white lg:static lg:flex lg:space-x-6 lg:items-center justify-start sm:justify-end`}
             >
               <div className="flex flex-col sm:flex-row w-[80%] sm:w-[60%] items-start sm:items-end ml-3 sm:ml-0">
+               
                 {!isAuthenticated && <Link href="/" className="block py-2 px-4 hover:text-amber-600">Home</Link>}
+                {!isAuthenticated &&<DropdownMenu/>}
                 {!isAuthenticated && <Link href="/about" className="block py-2 px-4 hover:text-amber-600">About Us</Link>}
                 <Link href="/products" className="block py-2 px-4 hover:text-amber-600">Products</Link>
                 {isAuthenticated && <Link href="/buyer/orders" className="block py-2 px-4 hover:text-amber-600">Orders</Link>}
@@ -161,8 +164,8 @@ if (loading) return null;
                   </button>
                   {dropdownOpen && (
                     <div className="absolute right-0 mt-2 bg-white shadow-lg rounded-md w-48 z-50">
-                      {(user?.role.role.toLowerCase() === "admin" || user?.role.role.toLowerCase() === "seller") && (
-                        <Link className="block mt-4 px-4 py-2 hover:bg-gray-100" href={`/${user?.role.role.toLowerCase()}/dashboard`}>Go to Dashboard</Link>
+                      {(user?.role.toLowerCase() === "admin" || user?.role.toLowerCase() === "seller") && (
+                        <Link className="block mt-4 px-4 py-2 hover:bg-gray-100" href={`/${user?.role.toLowerCase()}/dashboard`}>Go to Dashboard</Link>
                       )}
                       <Link href="/profile" className="block px-4 py-2 hover:bg-gray-100">Profile</Link>
                       <Link href="/settings" className="block px-4 py-2 hover:bg-gray-100">Settings</Link>

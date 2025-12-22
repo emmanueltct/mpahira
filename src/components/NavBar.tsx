@@ -15,7 +15,7 @@ import {
 import SidebarPanel from './SidebarPanel';
 import { jwtDecode } from 'jwt-decode';
 
-
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -49,6 +49,17 @@ const NavBar = () => {
     logout?.(); // In case your auth-context provides it
     router.push('/login');
   };
+
+
+   // ✅ Fetch categories
+  const {
+    data: categories = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategoryList,
+  });
 
   // ✅ Auto-logout if token is missing or expired
   // useEffect(() => {
@@ -122,9 +133,12 @@ const NavBar = () => {
           >
             <Link href="/" className="block py-2 px-4 hover:text-amber-600">Home</Link>
             <Link href="/about" className="block py-2 px-4 hover:text-amber-600">About Us</Link>
+            <Link href="/about" className="block py-2 px-4 hover:text-amber-600">Test</Link>
             <Link href="/products" className="block py-2 px-4 hover:text-amber-600">Products</Link>
               {isAuthenticated?(<Link href="/buyer/orders" className="block py-2 px-4 hover:text-amber-600">Orders</Link>):""}
             <Link href="/contact" className="block py-2 px-4 hover:text-amber-600">Contact</Link>
+           
+     
           </nav>
 
           {/* Icons and User Dropdown */}

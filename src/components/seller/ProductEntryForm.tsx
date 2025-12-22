@@ -8,21 +8,21 @@ import { toast } from 'react-hot-toast';
 import { useCreateShopProduct } from '@/hooks/useSubmitProduct';
 import { useProductsCategory } from '@/hooks/useProductsCategories';
 import { useShops } from '@/hooks/useShops';
-import { useUnitProducts } from '@/hooks/useUnitProduct';
+import { useSubCategories } from '@/hooks/useSubCategories';
+
+ // ✅ custom hook for subcategories
 
 // ✅ Schema
 const formSchema = z.object({
   shopId: z.string().nonempty("Please select a shop"),
-  productId: z.string().nonempty("Please select a product"),
-  productUnit:z.string().nonempty("Please select a product"),
+  productId: z.string().nonempty("Please select a category"),
+  subCategoryId: z.string().nonempty("Please select a subcategory"),
   productName: z.string().min(2, 'Name must be at least 2 characters'),
-  kinyLabel:z.string().min(2, 'Kinyarwanda name must be at least 2 characters'),
-  productDiscount:z.string().optional(),
-  productPrice: z.string().min(1, 'Enter a price'),
+  kinyLabel: z.string().min(2, 'Kinyarwanda name must be at least 2 characters'),
   isExpires: z.boolean(),
   expireDate: z.string().optional(),
   isAvailable: z.boolean(),
-  productDescription: z.string().min(20,"Enter atleast 20 characters"),
+  productDescription: z.string().min(20, "Enter at least 20 characters"),
   productProfile: z.any(),
 });
 
@@ -81,10 +81,11 @@ function FormFile({ label, ...props }: any) {
 
 // ✅ Main Form
 export function ProductEntryForm() {
-  const router=useRouter()
+  const router = useRouter();
   const { data: shops, isLoading: shopsLoading } = useShops();
-  const { data: products, isLoading: productsLoading } = useProductsCategory();
-   const { data: units, isLoading: unitsLoading } = useUnitProducts();
+  const { data: categories, isLoading: categoriesLoading } = useProductsCategory();
+  const { data: subCategories, isLoading: subCategoriesLoading } = useSubCategories();
+
   const createProduct = useCreateShopProduct();
 
   const form = useForm<FormData>({
@@ -92,11 +93,9 @@ export function ProductEntryForm() {
     defaultValues: {
       shopId: '',
       productId: '',
+      subCategoryId: '',
       productName: '',
-      kinyLabel:'',
-      productPrice: '',
-      productUnit:'',
-      productDiscount:'0',
+      kinyLabel: '',
       isExpires: true,
       expireDate: '',
       isAvailable: true,
@@ -106,6 +105,12 @@ export function ProductEntryForm() {
   });
 
   const isExpires = form.watch("isExpires");
+  const selectedCategory = form.watch("productId");
+
+  // ✅ Filter subcategories by selected category
+  const filteredSubCategories = subCategories?.filter(
+    (sub: any) => sub.categoryId === selectedCategory
+  );
 
   const onSubmit = (values: FormData) => {
     const formData = new FormData();
@@ -126,7 +131,7 @@ export function ProductEntryForm() {
       onSuccess: () => {
         toast.success("✅ Product submitted successfully!");
         form.reset();
-        router.push("/seller/products")
+        router.push("/seller/products");
       },
       onError: () => {
         toast.error("❌ Something went wrong while submitting the product.");
@@ -137,16 +142,14 @@ export function ProductEntryForm() {
   return (
     <div className="max-w-2xl mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-semibold text-center mb-6">Add a New Product</h2>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full">
 
-          {/* Row 1: Shop + Category + Unit */}
-          
-          <div className="w-full flex flex-col md:flex-row gap-4">
+        {/* Row 1: Shop + Category */}
+        <div className="w-full flex flex-col md:flex-row gap-4">
           <div className="w-1/2">
             <FormSelect
               label="Shop"
               error={form.formState.errors.shopId?.message}
-              className="w-100"
               {...form.register("shopId")}
             >
               <option value="">Select a shop</option>
@@ -154,25 +157,35 @@ export function ProductEntryForm() {
                 <option key={shop.id} value={shop.id}>{shop.brandName}</option>
               ))}
             </FormSelect>
-            </div>
-            <div className="w-1/2">
+          </div>
+          <div className="w-1/2">
             <FormSelect
               label="Category"
               error={form.formState.errors.productId?.message}
-              className="w-full"
               {...form.register("productId")}
             >
               <option value="">Select a category</option>
-              {!productsLoading && products?.map((product: any) => (
-                <option key={product.id} value={product.id}>{product.product}</option>
+              {!categoriesLoading && categories?.map((cat: any) => (
+                <option key={cat.id} value={cat.id}>{cat.product}</option>
               ))}
             </FormSelect>
-            </div></div>
-           
+          </div>
+        </div>
 
-          {/* Row 2: Product Name + Product Name (Kinyarwanda) */}
-       
-          <div className="w-full flex flex-col md:flex-row gap-4">
+        {/* Row 2: SubCategory */}
+        <FormSelect
+          label="SubCategory"
+          error={form.formState.errors.subCategoryId?.message}
+          {...form.register("subCategoryId")}
+        >
+          <option value="">Select a subcategory</option>
+          {!subCategoriesLoading && filteredSubCategories?.map((sub: any) => (
+            <option key={sub.id} value={sub.id}>{sub.subCategoryEng}</option>
+          ))}
+        </FormSelect>
+
+        {/* Product Name + Kinyarwanda Name */}
+        <div className="w-full flex flex-col md:flex-row gap-4">
           <div className="w-1/2">
             <FormInput
               label="Product Name"
@@ -190,90 +203,48 @@ export function ProductEntryForm() {
           </div>
         </div>
 
-        <FormSelect
-              label="Unit"
-              error={form.formState.errors.unitId?.message}
-              className="w-full"
-              {...form.register("productUnit")}
-            >
-              <option value="">Select a unit</option>
-              {!unitsLoading && units?.map((unit: any) => (
-                <option key={unit.id} value={unit.id}>{unit.unitProduct}</option>
-              ))}
-          </FormSelect>
+        {/* Product Description */}
+        <FormTextarea
+          label="Product Description"
+          placeholder="Enter product description..."
+          {...form.register("productDescription")}
+        />
 
-          {/* Row 3: Price + Discount */}
-
-          <div className="w-full flex flex-col md:flex-row gap-4">
-          <div className="w-1/2">
-            <FormInput
-              label="Product Price"
-              type="number"
-              placeholder="Price"
-              error={form.formState.errors.productPrice?.message}
-              className="w-full"
-              {...form.register("productPrice")}
-            />
-            </div>
-             <div className="w-1/2">
-            <FormInput
-              label="Discount"
-              type="number"
-              placeholder="Discount %"
-              className="w-full"
-              {...form.register("productDiscount")}
-            />
-            </div>
-          </div>
-
-          {/* Product Description */}
-          <FormTextarea
-            label="Product Description"
-            placeholder="Enter product description..."
-            className="w-full"
-            {...form.register("productDescription")}
-          />
-
-          {/* Toggles */}
-       
-          
-          <div className="w-full flex flex-col md:flex-row gap-4">
+        {/* Toggles */}
+        <div className="w-full flex flex-col md:flex-row gap-4">
           <div className="w-1/2">
             <FormCheckbox label="Has Expiry" {...form.register("isExpires")} />
-            </div>
-            <div className="w-1/2">
+          </div>
+          <div className="w-1/2">
             <FormCheckbox label="Available" {...form.register("isAvailable")} />
           </div>
-          </div>
+        </div>
 
-          {/* Expire Date */}
-          {isExpires && (
-            <FormInput
-              label="Expire Date"
-              type="date"
-              className="w-full"
-              {...form.register("expireDate")}
-            />
-          )}
-
-          {/* Product Image */}
-          <FormFile
-            label="Product Image"
-            accept="image/*"
-            className="w-full"
-            {...form.register("productProfile")}
+        {/* Expire Date */}
+        {isExpires && (
+          <FormInput
+            label="Expire Date"
+            type="date"
+            {...form.register("expireDate")}
           />
+        )}
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={createProduct.isPending}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
-          >
-            {createProduct.isPending ? 'Submitting...' : 'Submit Product'}
-          </button>
-        </form>
+        {/* Product Image */}
+        <FormFile
+          label="Product Image"
+          accept="image/*"
+          {...form.register("productProfile")}
+        />
 
+        {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={createProduct.isPending}
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+        >
+          {createProduct.isPending ? 'Submitting...' : 'Submit Product'}
+        </button>
+      </form>
     </div>
   );
 }

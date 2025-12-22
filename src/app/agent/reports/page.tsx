@@ -3,7 +3,8 @@
 import React from "react";
 
 import AgentReport from "@/components/agentOrderReport";
+import Layout from "@/components/Layout";
 
 export default function Page() {
-  return < AgentReport/>;
+  return  <Layout>< AgentReport/></Layout>;
 }

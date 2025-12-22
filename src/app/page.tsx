@@ -6,6 +6,7 @@ import Markets from "@/components/Markets";
 import Testimony from "@/components/Testimony";
 import Contact from "@/components/Contact";
 import DefaultLayout from "@/components/defaultLayout";
+import EcommercePage from "@/components/test";
 // import Service from "@/components/ui/Service";
 
 
@@ -16,6 +17,7 @@ export default function Home() {
       {/* <NavBar/> */}
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start w-full max-w-full">
        <HeroSection/>
+       <EcommercePage/>
        {/* <Service/> */}
        <CarouselClientWrapper/>
        <Markets/>
