@@ -189,11 +189,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, layout }) => 
         <Box sx={{ display: 'flex', justifyContent: layout === 'list' ? 'flex-start' : 'center', alignItems: 'center', mt: 0.5 }}>
           <Rating
             name={`rating-${product.id}`}
-            value={userRating}
+            value={5}
             precision={0.5}
-            onChange={(_event, newValue) => {
-              if (newValue !== null) setUserRating(newValue);
-            }}
+            
             size="small"
             sx={{ color: 'primary.main' }}
           />

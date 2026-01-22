@@ -28,10 +28,13 @@ import ImageCard from "../ImageCard";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
 import ProductPricingModal from "./productPricing";
+import RecommendedProductsModal from "../RecommendedProductsModal";
+import { InfoRow } from "./InfoRow";
 
 
 const ProductsPage = () => {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedProductRecommendation, setSelectedProductRecommendation] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [category, setCategory] = useState("all");
@@ -140,6 +143,12 @@ const ProductsPage = () => {
       </div>
 
       <ProductPricingModal  productId={productId}  isOpen={isOpen} onClose={()=>setIsOpen(false)} productUnities={subUnits} />
+      {selectedProductRecommendation && (
+        <RecommendedProductsModal
+          shopProductId={selectedProductRecommendation}
+          onClose={() => setSelectedProductRecommendation(null)}
+        />
+      )}
       {/* Table */}
       {isLoading ? (
         <p>Loading...</p>
@@ -196,6 +205,13 @@ const ProductsPage = () => {
                       >
                        Unit Prices
                   </Button>
+                   <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => { setSelectedProductRecommendation(product.id)}}
+                      >
+                       Recoomendations
+                  </Button>
                   <Button size="sm" variant="outline">
                      <Link
                       href={`/seller/products/${product.id}/edit`}
@@ -217,20 +233,48 @@ const ProductsPage = () => {
                       </Button>
                     </DialogTrigger>
                     {selectedProduct?.id === product.id && (
-                      <DialogContent className="max-w-lg">
-                        <DialogHeader>
-                          <DialogTitle>{product.productName.product}</DialogTitle>
-                          <ImageCard product={product}/>
-                          <DialogDescription>
-                            <p><strong>Description:</strong> {product.productDescription}</p>
-                            <p><strong>Shop:</strong> {product.shopName.brandName}</p>
-                            <p><strong>Seller:</strong> {product.shopName.seller.firstName} {product.shopName.seller.lastName}</p>
-                            <p><strong>Market:</strong> {product.shopName.market.marketName}</p>
-                            <p><strong>Status:</strong> {product.isAvailable ? "Available" : "Unavailable"}</p>
-                            {product.isExpires && <p><strong>Expires Soon</strong></p>}
-                          </DialogDescription>
-                        </DialogHeader>
-                      </DialogContent>
+                    <DialogContent className="max-w-lg">
+                      <DialogHeader className="space-y-4">
+                        <DialogTitle className="text-xl font-semibold">
+                          {product.productName.product}
+                        </DialogTitle>
+
+                        <ImageCard product={product} />
+
+                        {/* We do NOT use <p> inside DialogDescription */}
+                        <DialogDescription asChild>
+                          <div className="space-y-3 text-sm text-gray-600">
+                            <InfoRow label="Description" value={product.productDescription} />
+                            <InfoRow label="Shop" value={product.shopName.brandName} />
+                            <InfoRow
+                              label="Seller"
+                              value={`${product.shopName.seller.firstName} ${product.shopName.seller.lastName}`}
+                            />
+                            <InfoRow label="Market" value={product.shopName.market.marketName} />
+
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-gray-800">Status:</span>
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  product.isAvailable
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-red-100 text-red-700"
+                                }`}
+                              >
+                                {product.isAvailable ? "Available" : "Unavailable"}
+                              </span>
+                            </div>
+
+                            {product.isExpires && (
+                              <div className="flex items-center gap-2 text-orange-600 font-medium">
+                                ⚠ Expires Soon
+                              </div>
+                            )}
+                          </div>
+                        </DialogDescription>
+                      </DialogHeader>
+                    </DialogContent>
+
                     )}
                   </Dialog>
                 </TableCell>

@@ -11,12 +11,20 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchCategoryList } from '@/hooks/useProducts';
 import { useQuery } from '@tanstack/react-query';
 import { ProductCardHomePage } from './ProductCardHomePage';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 function CategorySection({ category }: { category: Category }) {
+  // Filter subcategories that have at least 1 product
+  const subcategories = category.productSubCategory.filter(
+    (sub) => sub.shopProduct && sub.shopProduct.length > 0
+  );
+
   const [activeSub, setActiveSub] = useState(0);
   const swiperRef = useRef<any>(null);
 
-  const subcategories = category.productSubCategory;
+  if (subcategories.length === 0) return null; // Skip category if no subcategories with products
+
   const subcategory = subcategories[activeSub];
 
   const goNextSub = () => setActiveSub((p) => (p + 1) % subcategories.length);
@@ -25,7 +33,7 @@ function CategorySection({ category }: { category: Category }) {
 
   // Delay between category changes (8 seconds)
   useEffect(() => {
-    if (subcategories.length < 1) return;
+    if (!subcategory) return;
 
     if (subcategory?.shopProduct?.length <= 5) {
       const timer = setTimeout(goNextSub, 8000); // 8 seconds
@@ -33,11 +41,22 @@ function CategorySection({ category }: { category: Category }) {
     }
   }, [activeSub, subcategories.length, subcategory?.shopProduct?.length]);
 
+  // Initialize AOS
+  useEffect(() => {
+    AOS.init({ duration: 1000, once: true });
+  }, []);
+
   return (
-    <div className="flex flex-col lg:flex-row px-4 py-8 gap-6">
+    <div
+      className="flex flex-col lg:flex-row px-4 py-8 gap-6"
+      data-aos="fade-up"
+    >
       {/* Left Category Info */}
       {subcategory?.shopProduct && (
-        <div className="w-full lg:w-1/5 flex flex-col items-center gap-4 shadow-xl p-2">
+        <div
+          className="hidden  w-full lg:w-1/5 sm:flex flex-col items-center gap-4 shadow-xl p-2"
+          data-aos="fade-right"
+        >
           {subcategory?.imageUrl && (
             <>
               <Image
@@ -45,7 +64,7 @@ function CategorySection({ category }: { category: Category }) {
                 alt={category.product}
                 width={100}
                 height={150}
-                className="w-full h-48 object-contain"
+                className="w-full h-48 object-contain hidden sm:flex"
               />
 
               <h1 className="text-xl font-bold text-amber-600">
@@ -57,7 +76,7 @@ function CategorySection({ category }: { category: Category }) {
       )}
 
       {/* Right Section */}
-      <div className="w-full lg:w-4/5">
+      <div className="w-full lg:w-4/5" data-aos="fade-left">
         {subcategory?.shopProduct && (
           <div className="flex justify-between items-center mb-4">
             <ChevronLeft
@@ -80,7 +99,7 @@ function CategorySection({ category }: { category: Category }) {
             key={subcategory?.id}
             initial={{ opacity: 0, scale: 1.03, filter: 'blur(1px)' }}
             animate={{
-              opacity:1,
+              opacity: 1,
               scale: 1,
               filter: 'blur(0px)',
             }}
@@ -91,28 +110,19 @@ function CategorySection({ category }: { category: Category }) {
             }}
             transition={{
               duration: 1.2,
-              ease: [0.16, 1, 0.3, 1], // premium curve
+              ease: [0.16, 1, 0.3, 1],
             }}
+            data-aos="fade-up"
           >
-            {/* No products */}
-            {subcategory?.shopProduct?.length < 1 ? (
+            {/* Render only if products exist */}
+            {subcategory.shopProduct.length <= 5 ? (
               <div className="flex flex-wrap justify-center gap-4">
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col w-full mt-2">
-                  <div className="p-3 text-center">
-                    <p className="text-xs sm:text-sm text-black">
-                      Products under this category have not yet been added.
-                      Please check back later.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : // Render flex (no scroll)
-            subcategory?.shopProduct?.length <= 5 ? (
-              <div className="flex flex-wrap justify-center gap-4 bg-gray-300 sm:bg-amber-500">
                 {subcategory.shopProduct.map((product) => (
                   <div
                     key={product.id}
                     className="rounded-xl shadow-lg overflow-hidden flex flex-col w-40 sm:w-44 md:w-60"
+                    data-aos="zoom-in"
+                    data-aos-delay="100"
                   >
                     <ProductCardHomePage
                       product={product}
@@ -123,7 +133,6 @@ function CategorySection({ category }: { category: Category }) {
               </div>
             ) : (
               // Swiper scroll + pause on hover
-             
               <div
                 onMouseEnter={() => swiperRef.current?.autoplay.stop()}
                 onMouseLeave={() => swiperRef.current?.autoplay.start()}
@@ -133,13 +142,10 @@ function CategorySection({ category }: { category: Category }) {
                   modules={[Autoplay]}
                   onSwiper={(swiper) => (swiperRef.current = swiper)}
                   spaceBetween={16}
-                  slidesPerView={Math.min(
-                    5,
-                    subcategory?.shopProduct?.length
-                  )}
+                  slidesPerView={Math.min(5, subcategory?.shopProduct?.length)}
                   loop={false}
                   autoplay={{
-                    delay: 8000, // slower autoplay
+                    delay: 8000,
                     disableOnInteraction: false,
                   }}
                   onReachEnd={() => setTimeout(goNextSub, 8000)}
@@ -152,9 +158,13 @@ function CategorySection({ category }: { category: Category }) {
                   }}
                   className="w-full"
                 >
-                  {subcategory?.shopProduct?.map((product) => (
+                  {subcategory.shopProduct.map((product) => (
                     <SwiperSlide key={product.id}>
-                      <div className="bg-slate-50 p-3 rounded-xl shadow-lg overflow-hidden flex flex-col w-60 sm:w-44 md:w-48">
+                      <div
+                        className="bg-slate-50 p-3 rounded-xl shadow-lg overflow-hidden flex flex-col w-60 sm:w-44 md:w-48"
+                        data-aos="fade-up"
+                        data-aos-delay="150"
+                      >
                         <ProductCardHomePage
                           product={product}
                           category={category.product}
@@ -180,9 +190,18 @@ export default function EcommercePage() {
 
   if (isLoading) return '';
 
+  // Filter categories that have at least one subcategory with products
+  const filteredCategories = productCategories.filter(
+    (cat) =>
+      cat.productSubCategory &&
+      cat.productSubCategory.some(
+        (sub) => sub.shopProduct && sub.shopProduct.length > 0
+      )
+  );
+
   return (
     <div className="bg-white dark:bg-gray-800 w-full container mx-auto">
-      {productCategories.map((cat) => (
+      {filteredCategories.map((cat) => (
         <CategorySection key={cat.id} category={cat} />
       ))}
     </div>

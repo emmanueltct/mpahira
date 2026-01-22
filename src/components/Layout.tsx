@@ -60,6 +60,7 @@ export default function Layout({ children }) {
       { name: "product-units", icon:ChartBarDecreasingIcon, href:"/admin/unit-products" },
       { name: "category", icon:ChartBarDecreasingIcon, href:"/admin/categories" },
       { name: "products", icon:ShoppingBag, href:"/admin/products" },
+       { name: "clients-Reviews", icon:ShoppingBag, href:"/admin/clients-reviews" },
    
     ])
 

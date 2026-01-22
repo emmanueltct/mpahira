@@ -180,7 +180,53 @@ if (loading) return null;
         </div>
       </header>
 
-      <main className="min-h-screen h-full w-full mt-20">{children}</main>
+      <main className="min-h-screen h-full w-full mt-6">{children}</main>
+      {
+        isAuthenticated &&(
+        
+             <div className="flex sm:hidden w-full bg-white bottom-0 sticky z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.35)]  border-t border-gray-200  h-20 items-center justify-around px-4">
+                 <div className="relative cursor-pointer flex flex-col items-center" onClick={() => toggleSidebar("notifications")}>
+                    <FaBell size={22} className="text-gray-700" />
+                    {notificationCount > 0 && (
+                      <>
+                      <span className="absolute -top-2 left-12 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                        {notificationCount}
+                      </span>
+                      </>
+                    )}
+                     <span>
+                       {"Notifications"}
+                    </span>
+                  </div>
+                  <div className="relative cursor-pointer flex flex-col items-center" onClick={() => toggleSidebar("wishlist")}>
+                    <FaHeart size={22} className="text-gray-700" />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-2 left-10 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                        {wishlistCount}
+                      </span>
+                    )}
+                     <span>
+                       {"Wish List"}
+                    </span>
+                  </div>
+                  <div className="relative  cursor-pointer " onClick={() => toggleSidebar("wishlist")}>
+                  <Link href="/buyer/carts" className="relative cursor-pointer flex flex-col items-center">
+                    <FaShoppingCart size={22} className="text-gray-700" />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-2 left-10 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                        {cartCount}
+                      </span>
+                    )}
+                     <span>
+                       {"Cart item"}
+                    </span>
+                  </Link>
+                </div>
+            </div>
+       
+        )
+      }
+     
     </div>
   );
 };
