@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { FilterSidebar } from '@/components/FilterSidebar';
@@ -31,6 +33,7 @@ type FavouriteMarket={
 }
 
 export default function ProductPage() {
+  const searchParams = useSearchParams();
   // Add searchTerm to filters state
   const [filters, setFilters] = useState({
     searchTerm: '',
@@ -54,6 +57,21 @@ export default function ProductPage() {
   const handlePageChange = (page: number) => {
     setFilters((prev) => ({ ...prev, page }));
   };
+
+
+useEffect(() => {
+  setFilters({
+    searchTerm: searchParams.get('search') || '',
+    category: searchParams.get('category') || '',
+    market: searchParams.get('market') || '',
+    priceMin: Number(searchParams.get('priceMin')) || 0,
+    priceMax: Number(searchParams.get('priceMax')) || 0,
+    page: Number(searchParams.get('page')) || 1,
+    limit: 12,
+  });
+}, [searchParams]);
+
+
 
 
 
@@ -183,17 +201,26 @@ const { data: markets = [] } = useQuery<Market[]>({
               <LoadingSkeloton />
             ) : data ? (
               <>
-                <div
+              
+                 {data?.data && data.data.length > 0 ? (
+                  <div
                   className={
                     layout === "grid"
                       ? "grid grid-cols-1 md:grid-cols-4 sm:grid-cols-5 gap-10 place-items-center"
-                      : "space-y-4 flex flex-col w-full items-center"
+                      : "space-y-4 flex flex-col w-full items-center bg-amber-300"
                   }
                 >
-                  {data?.data?.map((product: any) => (
-                    <ProductCard key={product.id} product={product} layout={layout} />
-                  ))}
-                </div>
+                   { data.data.map((product: any) => (
+                      <ProductCard key={product.id} product={product} layout={layout} />
+                    ))
+                  }
+                     </div>
+                  ) : (
+                    <p className=" text-black-500 p-2">
+                      No products found matching your criteria.
+                    </p>
+                  )}
+               
 
                 <Pagination
                   currentPage={filters.page}
